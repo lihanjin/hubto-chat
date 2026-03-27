@@ -10,7 +10,7 @@ module.exports = (req, res) => {
             "isUpload": false,
             "auth":   process.env.AUTH_SECRET_KEY?true:false ,
             "model": "ChatGPTAPI",
-            "amodel": process.env.OPENAI_API_MODEL?? "gpt-3.5-turbo"
+            "amodel": process.env.OPENAI_API_MODEL?? "MiniMax-M2.7"
             ,isApiGallery:    process.env.MJ_API_GALLERY ? true : false 
             ,cmodels : process.env.CUSTOM_MODELS??'' 
             ,baiduId : process.env.TJ_BAIDU_ID?? "" 
@@ -26,6 +26,7 @@ module.exports = (req, res) => {
             ,visionModel: process.env.VISION_MODEL??""
             ,systemMessage: process.env.SYSTEM_MESSAGE??""
             ,customVisionModel: process.env.CUSTOM_VISION_MODELS??""
+            ,newApiUrl: process.env.NEW_API_URL??""
 
         }
     }

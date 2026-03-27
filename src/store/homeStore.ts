@@ -96,6 +96,8 @@ export const gptConfigStore= reactive({
 export interface gptServerType{
     OPENAI_API_KEY:string
     OPENAI_API_BASE_URL:string
+    NEW_API_KEY:string
+    NEW_API_URL:string
     MJ_SERVER:string
     MJ_API_SECRET:string
     UPLOADER_URL:string
@@ -139,6 +141,8 @@ const  getServerDefault=()=>{
 let v:gptServerType={
         OPENAI_API_KEY:'',
         OPENAI_API_BASE_URL:'',
+        NEW_API_KEY:'',
+        NEW_API_URL:'',
         MJ_SERVER:'',
         UPLOADER_URL:'',
         MJ_API_SECRET:'',

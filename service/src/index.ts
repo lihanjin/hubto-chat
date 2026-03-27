@@ -83,7 +83,7 @@ router.post('/session', async (req, res) => {
     const hasAuth = isNotEmptyString(AUTH_SECRET_KEY)
     const isUpload= isNotEmptyString(  process.env.API_UPLOADER )
     const isHideServer= isNotEmptyString(  process.env.HIDE_SERVER );
-    const amodel=   process.env.OPENAI_API_MODEL?? "gpt-3.5-turbo" ;
+    const amodel=   process.env.OPENAI_API_MODEL?? "MiniMax-M2.7" ;
     const isApiGallery=  isNotEmptyString(  process.env.MJ_API_GALLERY );
     const cmodels =   process.env.CUSTOM_MODELS??'' ;
     const baiduId=process.env.TJ_BAIDU_ID?? "" ;
@@ -108,10 +108,13 @@ router.post('/session', async (req, res) => {
     if(!isHk)  isHk= (process.env.VIGGLE_SERVER??"").toLocaleLowerCase().indexOf('-hk')>0
     
 
+    const newApiUrl = process.env.NEW_API_URL ?? ''
+
     const data= { disableGpt4,isWsrv,uploadImgSize,theme,isCloseMdPreview,uploadType,
       notify , baiduId, googleId,isHideServer,isUpload, auth: hasAuth
       , model: currentModel(),amodel,isApiGallery,cmodels,isUploadR2,gptUrl
       ,turnstile,menuDisable,visionModel,systemMessage,customVisionModel,backgroundImage,isHk
+      ,newApiUrl
     }
     res.send({  status: 'Success', message: '', data})
   }
@@ -122,6 +125,28 @@ router.post('/session', async (req, res) => {
 
 router.post('/verify', verify)
 router.get('/reg', regCookie )
+
+// 从 new-api 获取支持的模型列表
+router.get('/new-api-models', async (req, res) => {
+  try {
+    const newApiUrl = process.env.NEW_API_URL
+    const newApiKey = process.env.NEW_API_KEY
+    if (!newApiUrl || !newApiKey) {
+      res.status(400).json({ success: false, message: 'NEW_API_URL or NEW_API_KEY not configured' })
+      return
+    }
+    const response = await axios.get(`${newApiUrl}/v1/models`, {
+      headers: {
+        'Authorization': `Bearer ${newApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    })
+    res.json({ success: true, data: response.data })
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
 
  const API_BASE_URL = isNotEmptyString(process.env.OPENAI_API_BASE_URL)
     ? process.env.OPENAI_API_BASE_URL
