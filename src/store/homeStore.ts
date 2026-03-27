@@ -96,6 +96,10 @@ export const gptConfigStore= reactive({
 export interface gptServerType{
     OPENAI_API_KEY:string
     OPENAI_API_BASE_URL:string
+    OPENAI_API_KEY2?:string
+    OPENAI_API_BASE_URL2?:string
+    OPENAI_API_KEY3?:string
+    OPENAI_API_BASE_URL3?:string
     NEW_API_KEY:string
     NEW_API_URL:string
     MJ_SERVER:string
