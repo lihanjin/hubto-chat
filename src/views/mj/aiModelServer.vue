@@ -51,12 +51,13 @@ const appendModels=(models:any[])=>{
 // 从 new-api 获取模型列表
 const loadModelFromNewApi=async ()=>{
     try {
+        const newApiUrl = gptServerStore.myData.NEW_API_URL;
         const newApiKey = gptServerStore.myData.NEW_API_KEY;
-        if(!newApiKey){
-            mlog('NEW_API_KEY not configured');
+        if(!newApiUrl || !newApiKey){
+            mlog('NEW_API_URL or NEW_API_KEY not configured');
             return false;
         }
-        const response = await fetch(`https://alltoken.co/api/public/models`, {
+        const response = await fetch(`${newApiUrl}/api/public/models`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${newApiKey}`,

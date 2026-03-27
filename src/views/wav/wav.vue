@@ -3,7 +3,7 @@ import { NButton,NInput, useMessage,NEmpty } from 'naive-ui';
 //import { WavRecorder, WavStreamPlayer } from '@/lib/wavtools/index.js';
 import { WavRecorder, WavStreamPlayer } from '@openai/realtime-wavtools';
 import { RealtimeClient } from '@openai/realtime-api-beta';
-import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
+import type { ItemType } from '@openai/realtime-api-beta/dist/lib/client';
 import { ref,onMounted } from 'vue';
 import { mlog } from '@/api';
 import realtime from './realtime.vue';
