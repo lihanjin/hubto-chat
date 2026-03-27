@@ -27,6 +27,10 @@ module.exports = (req, res) => {
             ,systemMessage: process.env.SYSTEM_MESSAGE??""
             ,customVisionModel: process.env.CUSTOM_VISION_MODELS??""
             ,newApiUrl: process.env.NEW_API_URL??""
+            ,OPENAI_API_KEY2: process.env.OPENAI_API_KEY2 || process.env.OPENAI_API_KEY || ''
+            ,OPENAI_API_BASE_URL2: process.env.OPENAI_API_BASE_URL2 || process.env.OPENAI_API_BASE_URL || ''
+            ,OPENAI_API_KEY3: process.env.OPENAI_API_KEY3 || process.env.OPENAI_API_KEY || ''
+            ,OPENAI_API_BASE_URL3: process.env.OPENAI_API_BASE_URL3 || process.env.OPENAI_API_BASE_URL || ''
 
         }
     }

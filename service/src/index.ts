@@ -115,6 +115,10 @@ router.post('/session', async (req, res) => {
       , model: currentModel(),amodel,isApiGallery,cmodels,isUploadR2,gptUrl
       ,turnstile,menuDisable,visionModel,systemMessage,customVisionModel,backgroundImage,isHk
       ,newApiUrl
+      ,OPENAI_API_KEY2: process.env.OPENAI_API_KEY2 || process.env.OPENAI_API_KEY || ''
+      ,OPENAI_API_BASE_URL2: process.env.OPENAI_API_BASE_URL2 || process.env.OPENAI_API_BASE_URL || ''
+      ,OPENAI_API_KEY3: process.env.OPENAI_API_KEY3 || process.env.OPENAI_API_KEY || ''
+      ,OPENAI_API_BASE_URL3: process.env.OPENAI_API_BASE_URL3 || process.env.OPENAI_API_BASE_URL || ''
     }
     res.send({  status: 'Success', message: '', data})
   }

@@ -6,7 +6,7 @@ import {NSelect, NInput,NSlider, NButton, useMessage,NTag,NEmpty,NModal,NDivider
 import { ref ,computed,watch, onMounted,h} from "vue";
 import { SvgIcon } from '@/components/common'
 import { gptFetch, mlog } from "@/api";
-import { gptServerStore } from '@/store';
+import { gptServerStore, homeStore } from '@/store';
 
 const st= ref({ server:'',isShow:false,isLoadData:0 ,"search":''});
 const ms= useMessage();
@@ -51,8 +51,9 @@ const appendModels=(models:any[])=>{
 // 从 new-api 获取模型列表
 const loadModelFromNewApi=async ()=>{
     try {
-        const newApiUrl = gptServerStore.myData.NEW_API_URL;
-        const newApiKey = gptServerStore.myData.NEW_API_KEY;
+        // 优先从 gptServerStore 获取，其次从 session 获取
+        let newApiUrl = gptServerStore.myData.NEW_API_URL || homeStore.myData.session?.newApiUrl;
+        let newApiKey = gptServerStore.myData.NEW_API_KEY || homeStore.myData.session?.NEW_API_KEY;
         if(!newApiUrl || !newApiKey){
             mlog('NEW_API_URL or NEW_API_KEY not configured');
             return false;
