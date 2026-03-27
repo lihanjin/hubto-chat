@@ -6,10 +6,11 @@ import {NSelect, NInput,NSlider, NButton, useMessage,NTag,NEmpty,NModal,NDivider
 import { ref ,computed,watch, onMounted,h} from "vue";
 import { SvgIcon } from '@/components/common'
 import { gptFetch, mlog } from "@/api";
+import { gptServerStore } from '@/store';
 
 const st= ref({ server:'',isShow:false,isLoadData:0 ,"search":''});
 const ms= useMessage();
-  
+
 const emit= defineEmits(['success']);
 interface modelType{
     model:string
@@ -26,34 +27,73 @@ interface modelGroup{
 
 const mGroup= ref<modelGroup[]>([])
 
+const appendModels=(models:any[])=>{
+    models.forEach((v:any) => {
+        let is=false
+        for(let a of mGroup.value){
+            if(a.key.length==0 && !is){
+                let model= v.id as string
+                a.data.push({model})
+                break;
+            }
+            for(let b of a.key){
+                if(v.id && v.id.includes(b)){
+                    let model= v.id as string
+                    a.data.push({model})
+                    is=true
+                    break;
+                }
+            }
+        }
+    });
+}
+
+// 从 new-api 获取模型列表
+const loadModelFromNewApi=async ()=>{
+    try {
+        const newApiKey = gptServerStore.myData.NEW_API_KEY;
+        if(!newApiKey){
+            mlog('NEW_API_KEY not configured');
+            return false;
+        }
+        const response = await fetch(`https://alltoken.co/api/public/models`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${newApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const rd = await response.json();
+        mlog('new api models>> ', rd);
+        const modelList = Array.isArray(rd?.data?.data) ? rd.data.data : Array.isArray(rd?.data) ? rd.data : [];
+        if(rd.success && modelList.length>0){
+            appendModels(modelList);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        mlog('new api error>> ', error);
+        return false;
+    }
+}
+
 const loadModel=async ()=>{
+    // 先尝试从 new-api 获取
+    const success = await loadModelFromNewApi();
+    if(success){
+        st.value.isLoadData=1;
+        return;
+    }
+    // 降级到原来的方式
     try {
          const modelsData = await gptFetch('/v1/models');
           mlog('asdsd>> ', modelsData )
-        modelsData.data.forEach((v:any) => {
-              mlog('vv>> ',v )
-              let is=false
-              for(let a of mGroup.value){
-                if(a.key.length==0 && !is){
-                    let model= v.id as string
-                    a.data.push({model})
-                    break;
-                }
-                for(let b of a.key){
-                    if(v.id && v.id.includes(b)){
-                        let model= v.id as string
-                        a.data.push({model})
-                        is=true
-                        break;
-                    }
-                }
-              }
-        });
+        appendModels(modelsData.data || []);
         st.value.isLoadData=1
     } catch (error) {
         st.value.isLoadData=-1
         ms.error('Loading Models Error!')
-    } 
+    }
 }
 
 const initGroup=()=>{
@@ -66,6 +106,7 @@ const initGroup=()=>{
     mGroup.value.push( {name:'Claude',key:['claude','c-3'],data:[],icon:"ri:claude-fill"} )
     mGroup.value.push( {name:'Gemini',key:['gemini'],data:[],icon:"cbi:gemini"} )
     mGroup.value.push( {name:'Grok',key:['grok'],data:[],icon:"token:xai"} )
+    mGroup.value.push( {name:'MiniMax',key:['MiniMax'],data:[],icon:"logos:minimax"} )
     mGroup.value.push( {name:'Other',key:[],data:[],isClosed:true } )
 }
 
@@ -106,16 +147,16 @@ const abc=()=>{
 <div @click="st.isShow=true">
 <NTag  type="primary" round size="small" :bordered="false" class="!cursor-pointer">
             {{ $t('mj.server_load') }}  </NTag>
- 
+
 </div>
 <NModal  v-model:show="st.isShow"  preset="card"  :title="$t('mj.model_select')" class="!max-w-[620px]" @close="st.isShow=false" >
      <NEmpty v-if="st.isLoadData==0">Loading....</NEmpty>
      <NEmpty v-else-if="st.isLoadData==-1">Loaded Fail ....</NEmpty>
      <div   class=" overflow-y-auto max-h-[400px]" v-else >
         <div>
-            
+
             <n-select v-model:value="st.search" @update:value="abc" clearable :options="modellist" size="small" placeholder="search and select your model"  filterable   />
-       
+
         </div>
         <div v-for="mg in mGroup">
             <template v-if="mg.data.length>0">
@@ -141,7 +182,7 @@ const abc=()=>{
                    <NTag type="info" size="small" round>
                      <span class="cursor-pointer" @click="successClick(md)" >{{ md.model }}</span>
                    </NTag>
-                   
+
                 </div>
             </div>
             </template>
