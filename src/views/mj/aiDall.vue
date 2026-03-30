@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { useMessage, NButton, NSelect, NInput, NImage } from 'naive-ui';
-import { gptFetch, mlog, upImg } from '@/api'
-import { homeStore } from '@/store';
+import { chatSetting, gptFetch, mlog, upImg } from '@/api'
+import { gptConfigStore, homeStore, useChatStore } from '@/store';
 import { SvgIcon } from '@/components/common';
 import { t } from '@/locales';
 
 const ms = useMessage();
+const chatStore = useChatStore();
 interface myFile{
     file:any
     base64:string
@@ -14,34 +15,51 @@ interface myFile{
 const st =ref({isGo:false,quality:'medium' }); 
 const fsRef= ref() ; 
 const base64Array= ref<myFile[]>([]);    
-const f = ref({size:'1024x1024', prompt:'',"model": "dall-e-3","n": 1});
-const serverModelState = ref({ loading: false, error: '' });
+const f = ref({size:'1024x1024', prompt:'',"model": "","n": 1});
+const serverModelState = ref({ loading: false, error: '', loaded: false });
 const imageModels = ref<string[]>([]);
 
 const isImageModel = (model: string) => {
     const lower = model.toLowerCase();
+    if (/^image-\d+(\.\d+)?$/.test(lower))
+        return true;
+
     return [
         'dall-e',
         'gpt-image',
         'flux',
         'banana',
-        'gemini-3.1-flash-image-preview',
-        'image',
+        'ideogram',
+        'recraft',
+        'seedream',
+        'imagen',
     ].some(keyword => lower.includes(keyword));
 }
 
-const modelOptions = computed(() => {
-    const options = imageModels.value.map(model => ({ label: model, value: model }));
+const modelOptions = computed(() => imageModels.value.map(model => ({ label: model, value: model })));
 
-    if (f.value.model && !imageModels.value.includes(f.value.model))
-        options.unshift({ label: f.value.model, value: f.value.model });
+const getCurrentChatModel = () => {
+    const uuid = Number(chatStore.active ?? 1002);
+    const currentChatConfig = new chatSetting(uuid).getGptConfig();
+    return currentChatConfig.model || '';
+}
 
-    return Array.from(new Map(options.map(item => [item.value, item])).values());
-});
+const syncModelWithChatSetting = () => {
+    const chatModel = getCurrentChatModel();
+    if (chatModel && imageModels.value.includes(chatModel)) {
+        f.value.model = chatModel;
+        return;
+    }
+    if (imageModels.value.length > 0)
+        f.value.model = imageModels.value[0];
+    else
+        f.value.model = '';
+}
 
 const loadImageModels = async () => {
     serverModelState.value.loading = true;
     serverModelState.value.error = '';
+    serverModelState.value.loaded = false;
     try {
         const modelsData = await gptFetch('/v1/models');
         const nextModels = Array.isArray(modelsData?.data)
@@ -55,13 +73,14 @@ const loadImageModels = async () => {
         if (imageModels.value.length === 0)
             serverModelState.value.error = 'No image models returned from server';
 
-        if (imageModels.value.length > 0 && !imageModels.value.includes(f.value.model))
-            f.value.model = imageModels.value[0];
+        syncModelWithChatSetting();
     } catch (error) {
         imageModels.value = [];
+        f.value.model = '';
         serverModelState.value.error = 'Loading image models failed';
         ms.error('Loading image models failed');
     } finally {
+        serverModelState.value.loaded = true;
         serverModelState.value.loading = false;
     }
 }
@@ -73,6 +92,9 @@ const isDisabled= computed(()=>{
     }
     if(f.value.prompt.trim()=='') {
         //console.log('prompt',"空");
+        return true;
+    }
+    if(!f.value.model) {
         return true;
     }
     return false;
@@ -119,7 +141,7 @@ const qualityOption=  computed(()=>{
 });
 const modelPlaceholder = computed(() => {
     if (serverModelState.value.loading) return 'Loading image models...';
-    if (modelOptions.value.length === 0) return serverModelState.value.error || 'No image models available';
+    if (serverModelState.value.loaded && modelOptions.value.length === 0) return serverModelState.value.error || 'No image models available';
     return t('mjset.model');
 });
 const dimensionsList= computed(()=>{
@@ -194,6 +216,12 @@ const dimensionsList= computed(()=>{
 watch(()=>f.value.model,(n)=>{
     f.value.size='1024x1024';
 })
+watch(() => chatStore.active, () => {
+    syncModelWithChatSetting();
+})
+watch(() => gptConfigStore.myData.model, () => {
+    syncModelWithChatSetting();
+})
 const isCanImageEdit= computed(()=>{
     if(f.value.model=='dall-e-2') return true;
     if(f.value.model=='gpt-image-1') return true;
@@ -231,7 +259,6 @@ onMounted(() => {
       :loading="serverModelState.loading"
       :placeholder="modelPlaceholder"
       filterable
-      tag
       size="small"
       class="!w-[70%]"
       :clearable="false"
@@ -276,10 +303,6 @@ onMounted(() => {
         </n-button>
     </div>
 </div>
-
-<ul class="pt-4" v-html="$t('mjchat.dalleInfo')">
-   
-</ul>
 
 <input type="file"  @change="selectFile"  ref="fsRef" style="display: none" accept="image/jpeg, image/jpg, image/png, image/gif"/>
 
