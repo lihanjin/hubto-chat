@@ -1,31 +1,12 @@
 <script setup lang="ts">
-import { ref ,computed,watch} from 'vue';
-import {useMessage, NButton,NSelect,NInput, NImage, c} from 'naive-ui';
-import {gptFetch, mlog, upImg} from '@/api'
+import { ref, computed, watch, onMounted } from 'vue';
+import { useMessage, NButton, NSelect, NInput, NImage } from 'naive-ui';
+import { gptFetch, mlog, upImg } from '@/api'
 import { homeStore } from '@/store';
 import { SvgIcon } from '@/components/common';
 import { t } from '@/locales';
 
 const ms = useMessage();
-const config = ref( {
-model:[
-{  "label": "DALL·E 3", "value": "dall-e-3" }
- ,{  "label": "GPT-Image-1", "value": "gpt-image-1" }
- ,{  "label": "GPT-Image-1.5", "value": "gpt-image-1.5" }
- ,{  "label": "flux-kontext-pro", "value": "flux-kontext-pro" }
- ,{  "label": "flux-kontext-max", "value": "flux-kontext-max" }
- ,{  "label": "nano-banana-2", "value": "nano-banana-2" }
- ,{  "label": "nano-banana", "value": "nano-banana" }
- ,{  "label": "nano-banana-hd", "value": "nano-banana-hd" }
- ,{  "label": "gemini-3.1-flash-image-preview", "value": "gemini-3.1-flash-image-preview" }
- ,{  "label": "DALL·E 2", "value": "dall-e-2" }
- ,{  "label": "Flux", "value": "flux" }
- ,{  "label": "Flux-Dev", "value": "flux-dev" }
- ,{  "label": "Flux-Pro", "value": "flux-pro" }
- ,{  "label": "Flux-Pro-1.1", "value": "flux-pro-1.1" }
- ,{  "label": "Flux-Pro-1.1-Ultra", "value": "flux-pro-1.1-ultra" }
-]
-});
 interface myFile{
     file:any
     base64:string
@@ -34,6 +15,57 @@ const st =ref({isGo:false,quality:'medium' });
 const fsRef= ref() ; 
 const base64Array= ref<myFile[]>([]);    
 const f = ref({size:'1024x1024', prompt:'',"model": "dall-e-3","n": 1});
+const serverModelState = ref({ loading: false, error: '' });
+const imageModels = ref<string[]>([]);
+
+const isImageModel = (model: string) => {
+    const lower = model.toLowerCase();
+    return [
+        'dall-e',
+        'gpt-image',
+        'flux',
+        'banana',
+        'gemini-3.1-flash-image-preview',
+        'image',
+    ].some(keyword => lower.includes(keyword));
+}
+
+const modelOptions = computed(() => {
+    const options = imageModels.value.map(model => ({ label: model, value: model }));
+
+    if (f.value.model && !imageModels.value.includes(f.value.model))
+        options.unshift({ label: f.value.model, value: f.value.model });
+
+    return Array.from(new Map(options.map(item => [item.value, item])).values());
+});
+
+const loadImageModels = async () => {
+    serverModelState.value.loading = true;
+    serverModelState.value.error = '';
+    try {
+        const modelsData = await gptFetch('/v1/models');
+        const nextModels = Array.isArray(modelsData?.data)
+            ? modelsData.data
+                .map((item: any) => typeof item?.id === 'string' ? item.id.trim() : '')
+                .filter((item: string) => !!item && isImageModel(item))
+            : [];
+
+        imageModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
+
+        if (imageModels.value.length === 0)
+            serverModelState.value.error = 'No image models returned from server';
+
+        if (imageModels.value.length > 0 && !imageModels.value.includes(f.value.model))
+            f.value.model = imageModels.value[0];
+    } catch (error) {
+        imageModels.value = [];
+        serverModelState.value.error = 'Loading image models failed';
+        ms.error('Loading image models failed');
+    } finally {
+        serverModelState.value.loading = false;
+    }
+}
+
 const isDisabled= computed(()=>{
     if(st.value.isGo) {
         //console.log('st.value.isGo',st.value.isGo);
@@ -84,6 +116,11 @@ const qualityOption=  computed(()=>{
 ,{label:'Low',value: 'low'}
  
 ]
+});
+const modelPlaceholder = computed(() => {
+    if (serverModelState.value.loading) return 'Loading image models...';
+    if (modelOptions.value.length === 0) return serverModelState.value.error || 'No image models available';
+    return t('mjchat.version');
 });
 const dimensionsList= computed(()=>{
     if(f.value.model=='dall-e-2'){
@@ -180,11 +217,25 @@ const selectFile=(input:any)=>{
     }).catch(e=>ms.error(e));
 }
 
+onMounted(() => {
+    loadImageModels();
+})
+
 </script>
 <template>
 <section class="mb-4 flex justify-between items-center"  >
      <div>{{ $t('mjchat.version') }} </div>
-    <n-select v-model:value="f.model" :options="config.model" filterable tag size="small"  class="!w-[70%]" :clearable="false" />
+    <n-select
+      v-model:value="f.model"
+      :options="modelOptions"
+      :loading="serverModelState.loading"
+      :placeholder="modelPlaceholder"
+      filterable
+      tag
+      size="small"
+      class="!w-[70%]"
+      :clearable="false"
+    />
 </section>
 <section class="mb-4 flex justify-between items-center"  >
      <div>{{ $t('mjchat.size') }}</div>
