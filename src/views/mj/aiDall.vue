@@ -18,8 +18,9 @@ const base64Array= ref<myFile[]>([]);
 const f = ref({size:'1024x1024', prompt:'',"model": "","n": 1});
 const serverModelState = ref({ loading: false, error: '', loaded: false });
 const imageModels = ref<string[]>([]);
+const IMAGE_GENERATION_ENDPOINT = 'image-generation';
 
-const isImageModel = (model: string) => {
+const isImageModelName = (model: string) => {
     const lower = model.toLowerCase();
     if (/^image-\d+(\.\d+)?$/.test(lower))
         return true;
@@ -34,6 +35,17 @@ const isImageModel = (model: string) => {
         'seedream',
         'imagen',
     ].some(keyword => lower.includes(keyword));
+}
+
+const hasImageGenerationCapability = (item: any) => {
+    const endpointTypes = Array.isArray(item?.supported_endpoint_types)
+        ? item.supported_endpoint_types
+        : [];
+
+    if (endpointTypes.length > 0)
+        return endpointTypes.includes(IMAGE_GENERATION_ENDPOINT);
+
+    return isImageModelName(typeof item?.id === 'string' ? item.id : '');
 }
 
 const modelOptions = computed(() => imageModels.value.map(model => ({ label: model, value: model })));
@@ -64,8 +76,9 @@ const loadImageModels = async () => {
         const modelsData = await gptFetch('/v1/models');
         const nextModels = Array.isArray(modelsData?.data)
             ? modelsData.data
+                .filter((item: any) => hasImageGenerationCapability(item))
                 .map((item: any) => typeof item?.id === 'string' ? item.id.trim() : '')
-                .filter((item: string) => !!item && isImageModel(item))
+                .filter((item: string) => !!item)
             : [];
 
         imageModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
