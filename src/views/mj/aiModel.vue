@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import {NSelect, NInput,NSlider, NButton, useMessage,NTag,NPopselect ,NAvatar, NText} from "naive-ui"
-import type { SelectRenderLabel, SelectRenderTag } from 'naive-ui'
-import { ref ,computed,watch, onMounted,h} from "vue";
+import { NSelect, NInput, NSlider, NButton, useMessage, NTag } from "naive-ui"
+import { ref, computed, watch, onMounted } from "vue";
 import {gptConfigStore, homeStore,useChatStore} from '@/store'
-import { mlog,chatSetting } from "@/api";
-import { t } from "@/locales";
-
-import AiModelServer from "./aiModelServer.vue";
+import { gptFetch, chatSetting } from "@/api";
  
 
 const emit = defineEmits(['close']);
@@ -18,19 +14,11 @@ const chatSet = new chatSetting( uuid==null?1002:uuid);
 const nGptStore = ref(  chatSet.getGptConfig() );
 
 const config = ref({
-model:[ 'gpt-5.1','gemini-3-pro-preview','grok-4.1','gpt-5','gpt-5-mini','gpt-5-nano','o1','o1-2024-12-17', 'gpt-4-turbo-2024-04-09','o1-preview','o1-mini','o1-preview-2024-09-12','o1-mini-2024-09-12','chatgpt-4o-latest','gpt-4o-2024-11-20','gpt-4o-2024-08-06','gpt-4o-2024-05-13','gpt-4o-mini-2024-07-18','gpt-4o-mini','gpt-4o','gpt-4-turbo','gpt-4-0125-preview','gpt-3.5-turbo',`gpt-4-1106-preview`,`gpt-3.5-turbo-16k`,'gpt-4','gpt-4-0613','gpt-4-32k-0613' ,'gpt-4-32k','gpt-4-32k-0314',`gpt-3.5-turbo-16k-0613`
-,`gpt-4-vision-preview`,`gpt-3.5-turbo-1106` ,'gpt-3.5-turbo-0125'
-,'gpt-3.5-turbo-0301','gpt-3.5-turbo-0613','gpt-4-all','gpt-3.5-net'
-,'gemini-pro',"gemini-pro-vision",'gemini-pro-1.5',"gemini-1.5-pro-exp-0801"
-,'claude-3-7-sonnet-20250219'
-,'claude-3-5-sonnet-20241022','claude-3-sonnet-20240229','claude-3-opus-20240229','claude-3-haiku-20240307','claude-3-5-sonnet-20240620','suno-v3'
-,'deepseek-r1','deepseek-v3'
-,'grok-3','grok-3-reasoner','grok-3-deepsearch'
-,'gpt-4.5-preview-2025-02-27','gpt-4.5-preview'
-]
-,maxToken:16384
+maxToken:16384
 }); 
-const st= ref({openMore:false,isShow:false ,server:'' });
+const st= ref({openMore:false });
+const serverModels = ref<string[]>([]);
+const modelLoadState = ref({ loading: false, loaded: false, error: '' });
 const voiceList= computed(()=>{
     let rz=[];
     for(let o of "alloy,echo,fable,onyx,nova,shimmer".split(/[ ,]+/ig))rz.push({label:o,value:o}) 
@@ -38,37 +26,16 @@ const voiceList= computed(()=>{
 });
 const modellist = computed(() => { //
     let rz =[ ];
-    for(let o of config.value.model){
+    for(let o of serverModels.value){
         rz.push({label:o,value:o})
+    }
+    if(nGptStore.value.model){
+        rz.push({label:nGptStore.value.model,value:nGptStore.value.model})
     }
     if(gptConfigStore.myData.userModel){
         let arr = gptConfigStore.myData.userModel.split(/[ ,]+/ig);
-        //  let uniqueArray  = arr.filter((value, index, self) => {
-        //     return self.indexOf(value) === index;
-        // });
         for(let o of arr ){
             o && rz.push({label:o,value:o})
-        }
-    }
-    //服务端的 CUSTOM_MODELS 设置
-    if( homeStore.myData.session.cmodels ){
-        let delModel:string[] = [];
-        let addModel:string[]=[];
-        let isDelAll= false
-        homeStore.myData.session.cmodels.split(/[ ,]+/ig).map( (v:string)=>{
-            if(v.indexOf('-')==0){
-                delModel.push(v.substring(1))
-                if( v=='-all') isDelAll=true;
-            }else{
-                addModel.push(v);
-            }
-        });
-        mlog('cmodels',delModel,addModel);
-        if( isDelAll  )rz=[];
-        rz= rz.filter(v=> delModel.indexOf(v.value)==-1 );
-        addModel.map(o=>rz.push({label:o,value:o}) )
-        if (rz.length==0){
-            rz.push({label:'gpt-3.5-turbo',value:'gpt-3.5-turbo'}) 
         }
     }
 
@@ -78,12 +45,38 @@ const modellist = computed(() => { //
     );
     return uniqueArray ;
 });
+const modelPlaceholder = computed(() => {
+    if (modelLoadState.value.loading) return 'Loading models...';
+    if (modellist.value.length === 0) return modelLoadState.value.error || 'No models available';
+    return 'search and select your model';
+});
 const ms= useMessage();
-// const save = ()=>{ 
-//     gptConfigStore.setMyData( nGptStore.value );
-//     ms.success( t('common.saveSuccess')); //'保存成功'
-//     emit('close');
-// }
+const loadModels = async () => {
+    modelLoadState.value.loading = true;
+    modelLoadState.value.error = '';
+    try {
+        const modelsData = await gptFetch('/v1/models');
+        const nextModels = Array.isArray(modelsData?.data)
+            ? modelsData.data
+                .map((item: any) => typeof item?.id === 'string' ? item.id.trim() : '')
+                .filter((item: string) => !!item)
+            : [];
+
+        serverModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
+        modelLoadState.value.loaded = true;
+
+        if (serverModels.value.length === 0)
+            modelLoadState.value.error = 'No models returned from server';
+    } catch (error) {
+        serverModels.value = [];
+        modelLoadState.value.loaded = true;
+        modelLoadState.value.error = 'Loading Models Error!';
+        ms.error('Loading Models Error!');
+    } finally {
+        modelLoadState.value.loading = false;
+    }
+}
+
 const saveChat=(type:string)=>{
      chatSet.save(  nGptStore.value );
      gptConfigStore.setMyData( nGptStore.value );
@@ -123,15 +116,8 @@ const reSet=()=>{
 }
 
 onMounted(() => {
-    //gptConfigStore.myData= chatSet.getGptConfig();
+    loadModels()
 });
-
-const serverSuccess=(s:any)=>{
-    mlog('serverSuccess ', s  )
-    nGptStore.value.model= s.model
-}
-//
-//const f= ref({model:gptConfigStore.myData.model});
 </script>
 <template>
 <section class="mb-4 flex justify-between items-center"  >
@@ -145,25 +131,19 @@ const serverSuccess=(s:any)=>{
     </div>
     <div  class="!w-[70%] flex justify-end items-center " >
        <div> 
-        <n-select v-model:value="nGptStore.model" :options="modellist" size="small"  filterable   />
+        <n-select
+          v-model:value="nGptStore.model"
+          :options="modellist"
+          :loading="modelLoadState.loading"
+          :placeholder="modelPlaceholder"
+          size="small"
+          filterable
+        />
        </div>
        <div class=" pl-2" > 
-        <!-- <NButton type="primary" @click="saveChat('no')" size="small" >{{ $t('mj.server_load') }}</NButton> -->
-        <AiModelServer @success="serverSuccess"/>
-        <!-- <n-popselect
-                v-model:value="st.server"
-                :options="serverOptions"
-                :render-label="renderLabel"
-                size="medium"
-                scrollable
-            >
-            <NTag  type="primary" round size="small" :bordered="false" class="!cursor-pointer">
-            {{ $t('mj.server_load') }}
-            
-            </NTag>
-        </n-popselect> -->
-            
-
+        <NTag type="primary" round size="small" :bordered="false" class="!cursor-pointer" @click="loadModels">
+          {{ $t('mj.server_load') }}
+        </NTag>
        </div>
     </div>
 </section>
