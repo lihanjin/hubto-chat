@@ -25,25 +25,7 @@ const voiceList= computed(()=>{
     return rz;
 });
 const modellist = computed(() => { //
-    let rz =[ ];
-    for(let o of serverModels.value){
-        rz.push({label:o,value:o})
-    }
-    if(nGptStore.value.model){
-        rz.push({label:nGptStore.value.model,value:nGptStore.value.model})
-    }
-    if(gptConfigStore.myData.userModel){
-        let arr = gptConfigStore.myData.userModel.split(/[ ,]+/ig);
-        for(let o of arr ){
-            o && rz.push({label:o,value:o})
-        }
-    }
-
-    let uniqueArray: { label: string, value: string }[] = Array.from(
-        new Map(rz.map(item => [JSON.stringify(item), item]))
-        .values()
-    );
-    return uniqueArray ;
+    return serverModels.value.map((model) => ({ label: model, value: model }));
 });
 const modelPlaceholder = computed(() => {
     if (modelLoadState.value.loading) return 'Loading models...';
@@ -64,6 +46,9 @@ const loadModels = async () => {
 
         serverModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
         modelLoadState.value.loaded = true;
+
+        if (serverModels.value.length > 0 && !serverModels.value.includes(nGptStore.value.model))
+            nGptStore.value.model = serverModels.value[0];
 
         if (serverModels.value.length === 0)
             modelLoadState.value.error = 'No models returned from server';
@@ -147,13 +132,6 @@ onMounted(() => {
        </div>
     </div>
 </section>
-<section class="mb-4 flex justify-between items-center"  >
-    <n-input   :placeholder="$t('mjchat.modlePlaceholder')" v-model:value="gptConfigStore.myData.userModel">
-      <template #prefix>
-        {{ $t('mjchat.myModle') }}
-      </template>
-    </n-input>
- </section>
  <section class=" flex justify-between items-center"  >
      <div> {{ $t('mjchat.historyCnt') }}
      </div>

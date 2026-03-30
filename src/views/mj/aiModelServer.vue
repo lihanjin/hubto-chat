@@ -11,6 +11,7 @@ const st= ref({ server:'',isShow:false,isLoadData:0 ,"search":''});
 const ms= useMessage();
 
 const emit= defineEmits(['success']);
+const rawModels = ref<string[]>([]);
 interface modelType{
     model:string
     //maxToken:Number
@@ -26,18 +27,22 @@ interface modelGroup{
 
 const mGroup= ref<modelGroup[]>([])
 
-const appendModels=(models:any[])=>{
-    models.forEach((v:any) => {
+const resetGroupData = () => {
+    mGroup.value.forEach((group) => {
+        group.data = [];
+    });
+}
+
+const appendModels=(models:string[])=>{
+    models.forEach((model) => {
         let is=false
         for(let a of mGroup.value){
             if(a.key.length==0 && !is){
-                let model= v.id as string
                 a.data.push({model})
                 break;
             }
             for(let b of a.key){
-                if(v.id && v.id.includes(b)){
-                    let model= v.id as string
+                if(model && model.includes(b)){
                     a.data.push({model})
                     is=true
                     break;
@@ -49,9 +54,19 @@ const appendModels=(models:any[])=>{
 
 const loadModel=async ()=>{
     try {
-         const modelsData = await gptFetch('/v1/models');
+        const modelsData = await gptFetch('/v1/models');
         mlog('model server list>> ', modelsData )
-        appendModels(Array.isArray(modelsData?.data) ? modelsData.data : []);
+        rawModels.value = Array.isArray(modelsData?.data)
+            ? Array.from(
+                new Set(
+                    modelsData.data
+                        .map((item: any) => typeof item?.id === 'string' ? item.id.trim() : '')
+                        .filter((item: string) => !!item)
+                )
+            ).sort((a, b) => a.localeCompare(b))
+            : [];
+        resetGroupData();
+        appendModels(rawModels.value);
         st.value.isLoadData=1
     } catch (error) {
         st.value.isLoadData=-1
@@ -85,14 +100,7 @@ const successClick=(md:any)=> {
 
 //const usageData = await gptFetch(urlUsage);
 const modellist = computed(() => {
-    let rz: any[]=[];
-    for(let o of mGroup.value){
-        if(o.data.length<=0) continue
-        for(let v of o.data){
-         rz.push({label:v.model,value:v.model})
-        }
-    }
-    return rz;
+    return rawModels.value.map((model) => ({label:model,value:model}));
 });
 const abc=()=>{
     //console.log('abc>> ',st.value.search)
