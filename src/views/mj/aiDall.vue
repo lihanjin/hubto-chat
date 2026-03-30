@@ -120,7 +120,7 @@ const qualityOption=  computed(()=>{
 const modelPlaceholder = computed(() => {
     if (serverModelState.value.loading) return 'Loading image models...';
     if (modelOptions.value.length === 0) return serverModelState.value.error || 'No image models available';
-    return t('mjchat.version');
+    return t('mjset.model');
 });
 const dimensionsList= computed(()=>{
     if(f.value.model=='dall-e-2'){
@@ -224,7 +224,7 @@ onMounted(() => {
 </script>
 <template>
 <section class="mb-4 flex justify-between items-center"  >
-     <div>{{ $t('mjchat.version') }} </div>
+     <div>{{ $t('mjset.model') }} </div>
     <n-select
       v-model:value="f.model"
       :options="modelOptions"
