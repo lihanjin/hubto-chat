@@ -118,8 +118,8 @@ export default {
 
   ,mjtab:{
     chat:'对话'
-    ,draw:'绘画'
-    ,drawinfo:'AI绘画 Midjourney引擎'
+    ,draw:'生图'
+    ,drawinfo:'AI生图'
     ,gallery:'画廊'
     ,galleryInfo:'我的画廊'
   }

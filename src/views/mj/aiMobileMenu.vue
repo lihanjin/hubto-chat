@@ -40,17 +40,6 @@ const urouter = useRouter() //
         <SvgIcon icon="ri:wechat-line" class="text-3xl"></SvgIcon>
         <div class="text-[13px]">{{$t('mjtab.chat')}}</div>
       </div>
-      <div  v-if="!isDisableMenu ( 'gpts')"  class="flex items-center justify-center flex-col "  @click="homeStore.setMyData({act:'showgpts'}) " >
-        <SvgIcon icon="ri:apps-fill" class="text-3xl"></SvgIcon>
-        <div class="text-[13px]">GPTs</div>
-      </div>
-
-      <div v-if="!isDisableMenu ( 'realtime')"    class="flex items-center justify-center flex-col "  @click="homeStore.setMyData({act:'openRealtime'}) " >
-        <SvgIcon icon="ri:mic-fill" class="text-3xl"></SvgIcon>
-        <div class="text-[13px]">{{$t('mj.rttab')}}</div>
-      </div>
-
-
       <div v-if="!isDisableMenu ( 'draws')" class="flex items-center justify-center flex-col "  @click="homeStore.setMyData({act:'showDraw'}) " :class="[goHome=='draw' ? 'active' : '']" >
         <SvgIcon icon="ic:outline-palette" class="text-3xl"></SvgIcon>
         <div class="text-[13px]">{{$t('mjtab.draw')}}</div>
@@ -60,12 +49,10 @@ const urouter = useRouter() //
         <SvgIcon icon="arcticons:wynk-music" class="text-3xl"></SvgIcon>
         <div class="text-[13px]">{{ $t('suno.menu') }}</div>
       </div>
-
-
-      <!-- <div  v-if="!isDisableMenu ( 'gallery')"  class="flex items-center justify-center flex-col " @click="homeStore.setMyData({act:'gallery'})" >
-        <SvgIcon icon="material-symbols:imagesmode-outline" class="text-3xl"></SvgIcon>
-        <div class="text-[13px]">{{$t('mjtab.gallery')}}</div>
-      </div>  -->
+      <div v-if="!isDisableMenu ( 'video')" class="flex items-center justify-center flex-col " @click="urouter.push('/video')" :class="[ goHome =='video' ? 'active' : '']">
+        <SvgIcon icon="ri:video-on-line" class="text-3xl"></SvgIcon>
+        <div class="text-[13px]">{{ $t('video.menu') }}</div>
+      </div>
   </div>
 
   <n-drawer v-model:show="st.show"  class="!h-[90vh] !max-h-[660px]"     placement="bottom" v-if="goHome=='draw'">

@@ -96,63 +96,6 @@ const chatId= computed(()=>chatStore.active??'1002' );
                     {{ $t('video.menuinfo') }}
                 </n-tooltip>                
             </a>
-
-
-            <a  v-if="!isDisableMenu ( 'gpts')"   @click="homeStore.setMyData({act:'showgpts'}) " class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
-                <n-tooltip placement="right" trigger="hover">
-                  <template #trigger> 
-                    <div  class="flex h-full justify-center items-center   py-1 flex-col" >
-                    <SvgIcon icon="ri:apps-fill" class="text-3xl flex-1"></SvgIcon>
-                     <span class="text-[10px]">GPTs</span>
-                    </div> 
-                  </template>
-                    ChatGPT Store 
-                </n-tooltip>
-            </a>
-
-             <a  v-if="!isDisableMenu ( 'gallery')"  @click="homeStore.setMyData({act:'gallery'}) " class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
-                <n-tooltip placement="right" trigger="hover">
-                  <template #trigger> 
-                    <div  class="flex h-full justify-center items-center   py-1 flex-col" >
-                    <SvgIcon icon="material-symbols:imagesmode-outline" class="text-3xl flex-1"></SvgIcon>
-                     <span class="text-[10px]">{{$t('mjtab.gallery')}}</span>
-                    </div> 
-                  </template>
-                    {{ $t('mjtab.galleryInfo') }}
-                </n-tooltip>
-            </a>
-
-
-            <a v-if="!isDisableMenu ( 'dance')"      @click="st.active='dance'; urouter.push('/dance')" 
-                class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
-                <n-tooltip placement="right" trigger="hover">
-                  <template #trigger> 
-                    <div  class="flex  h-full justify-center items-center py-1 flex-col " :class="[ goHome =='dance' ? 'active' : '']">
-                      <SvgIcon icon="mdi:dance-ballroom" class="text-3xl flex-1"></SvgIcon>
-                      <span class="text-[10px]">{{ $t('dance.menu') }}</span>
-                    </div>  
-                  </template>
-                    {{ $t('dance.menuinfo') }}
-                </n-tooltip>                
-            </a>
-
-             <a v-if="!isDisableMenu ( 'realtime')"   @click="homeStore.setMyData({act:'openRealtime'}) "  
-                class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
-                <n-tooltip placement="right" trigger="hover">
-                  <template #trigger> 
-                    <div  class="flex  h-full justify-center items-center py-1 flex-col " :class="[ goHome =='realtime' ? 'active' : '']">
-                      <SvgIcon icon="ri:mic-fill" class="text-3xl flex-1"></SvgIcon>
-                      <span class="text-[10px]">{{$t('mj.rttab')}}</span>
-                    </div>  
-                  </template>
-                    {{ $t('mj.rtinfo') }}
-                </n-tooltip>                
-            </a>
-
-            
-
-             
-
         </div>
         <div class="flex flex-col  space-y-2 "> 
 
