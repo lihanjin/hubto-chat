@@ -19,6 +19,7 @@ const f = ref({size:'1024x1024', prompt:'',"model": "","n": 1});
 const serverModelState = ref({ loading: false, error: '', loaded: false });
 const imageModels = ref<string[]>([]);
 const IMAGE_GENERATION_ENDPOINT = 'image-generation';
+const IMAGE_MODEL_WHITELIST = ['image-01'];
 
 const isImageModelName = (model: string) => {
     const lower = model.toLowerCase();
@@ -38,6 +39,13 @@ const isImageModelName = (model: string) => {
 }
 
 const hasImageGenerationCapability = (item: any) => {
+    const modelId = typeof item?.id === 'string' ? item.id.trim() : '';
+    if (!modelId)
+        return false;
+
+    if (!IMAGE_MODEL_WHITELIST.includes(modelId.toLowerCase()))
+        return false;
+
     const endpointTypes = Array.isArray(item?.supported_endpoint_types)
         ? item.supported_endpoint_types
         : [];
@@ -45,7 +53,7 @@ const hasImageGenerationCapability = (item: any) => {
     if (endpointTypes.length > 0)
         return endpointTypes.includes(IMAGE_GENERATION_ENDPOINT);
 
-    return isImageModelName(typeof item?.id === 'string' ? item.id : '');
+    return isImageModelName(modelId);
 }
 
 const modelOptions = computed(() => imageModels.value.map(model => ({ label: model, value: model })));
