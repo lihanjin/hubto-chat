@@ -6,6 +6,26 @@ import { setupStore } from './store'
 import { setupRouter } from './router'
 import { gptServerStore, type gptServerType } from './store/homeStore'
 
+const DEFAULT_API_BASE_URL = 'http://admin.hubto.ai'
+const LEGACY_API_HOSTS = [
+  'https://alltoken.co',
+  'http://alltoken.co',
+  'https://www.alltoken.co',
+  'http://www.alltoken.co',
+]
+
+const normalizeApiBaseUrl = (baseUrl?: string | null) => {
+  const trimmed = (baseUrl || '').trim()
+
+  if (!trimmed)
+    return DEFAULT_API_BASE_URL
+
+  if (LEGACY_API_HOSTS.some(host => trimmed.startsWith(host)))
+    return trimmed.replace(/^https?:\/\/(www\.)?alltoken\.co/i, DEFAULT_API_BASE_URL)
+
+  return trimmed
+}
+
 const syncServerConfigFromPrimaryApi = (
   baseUrl?: string | null,
   apiKey?: string | null,
@@ -58,6 +78,21 @@ async function bootstrap() {
 
   setupStore(app)
 
+  gptServerStore.setMyData({
+    OPENAI_API_BASE_URL: normalizeApiBaseUrl(gptServerStore.myData.OPENAI_API_BASE_URL),
+    MJ_SERVER: normalizeApiBaseUrl(gptServerStore.myData.MJ_SERVER),
+    SUNO_SERVER: normalizeApiBaseUrl(gptServerStore.myData.SUNO_SERVER),
+    LUMA_SERVER: normalizeApiBaseUrl(gptServerStore.myData.LUMA_SERVER),
+    VIGGLE_SERVER: normalizeApiBaseUrl(gptServerStore.myData.VIGGLE_SERVER),
+    RUNWAY_SERVER: normalizeApiBaseUrl(gptServerStore.myData.RUNWAY_SERVER),
+    IDEO_SERVER: normalizeApiBaseUrl(gptServerStore.myData.IDEO_SERVER),
+    KLING_SERVER: normalizeApiBaseUrl(gptServerStore.myData.KLING_SERVER),
+    PIKA_SERVER: normalizeApiBaseUrl(gptServerStore.myData.PIKA_SERVER),
+    PIXVERSE_SERVER: normalizeApiBaseUrl(gptServerStore.myData.PIXVERSE_SERVER),
+    UDIO_SERVER: normalizeApiBaseUrl(gptServerStore.myData.UDIO_SERVER),
+    RIFF_SERVER: normalizeApiBaseUrl(gptServerStore.myData.RIFF_SERVER),
+  })
+
   // 从 URL 参数读取配置（支持三个API配置）
   const urlParams = new URLSearchParams(window.location.search);
   const getUrlParam = (name: string, index: number) => {
@@ -76,21 +111,21 @@ async function bootstrap() {
     if (key1)
       urlConfig.OPENAI_API_KEY = key1
     if (url1)
-      urlConfig.OPENAI_API_BASE_URL = url1
+      urlConfig.OPENAI_API_BASE_URL = normalizeApiBaseUrl(url1)
 
-    Object.assign(urlConfig, syncServerConfigFromPrimaryApi(url1, key1))
+    Object.assign(urlConfig, syncServerConfigFromPrimaryApi(normalizeApiBaseUrl(url1), key1))
   }
   if (key2 || url2) {
     if (key2)
       urlConfig.OPENAI_API_KEY2 = key2
     if (url2)
-      urlConfig.OPENAI_API_BASE_URL2 = url2
+      urlConfig.OPENAI_API_BASE_URL2 = normalizeApiBaseUrl(url2)
   }
   if (key3 || url3) {
     if (key3)
       urlConfig.OPENAI_API_KEY3 = key3
     if (url3)
-      urlConfig.OPENAI_API_BASE_URL3 = url3
+      urlConfig.OPENAI_API_BASE_URL3 = normalizeApiBaseUrl(url3)
   }
 
   if (Object.keys(urlConfig).length > 0) {

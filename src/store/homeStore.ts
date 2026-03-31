@@ -2,6 +2,8 @@ import { gptsType, mlog } from '@/api';
 import { reactive } from 'vue'
 import { ss } from '@/utils/storage'
 
+const DEFAULT_API_BASE_URL = 'http://admin.hubto.ai'
+
 export const homeStore = reactive({
     myData:{
         act:'',//动作
@@ -144,33 +146,33 @@ export interface gptServerType{
 const  getServerDefault=()=>{
 let v:gptServerType={
         OPENAI_API_KEY:'',
-        OPENAI_API_BASE_URL:'',
+        OPENAI_API_BASE_URL:DEFAULT_API_BASE_URL,
         NEW_API_KEY:'',
         NEW_API_URL:'',
-        MJ_SERVER:'',
+        MJ_SERVER:DEFAULT_API_BASE_URL,
         UPLOADER_URL:'',
         MJ_API_SECRET:'',
         SUNO_KEY:'',
-        SUNO_SERVER:'',
+        SUNO_SERVER:DEFAULT_API_BASE_URL,
         MJ_CDN_WSRV:false
         ,IS_SET_SYNC:true,
-        LUMA_SERVER:'',
+        LUMA_SERVER:DEFAULT_API_BASE_URL,
         LUMA_KEY:'',
-        VIGGLE_SERVER:'',
+        VIGGLE_SERVER:DEFAULT_API_BASE_URL,
         VIGGLE_KEY:'',
         TAB_VIDEO:'all',
-        RUNWAY_SERVER:'',
+        RUNWAY_SERVER:DEFAULT_API_BASE_URL,
         RUNWAY_KEY:'',
-        IDEO_SERVER:'',
+        IDEO_SERVER:DEFAULT_API_BASE_URL,
         IDEO_KEY:'',
-        KLING_SERVER:'',
+        KLING_SERVER:DEFAULT_API_BASE_URL,
         KLING_KEY:'',
-        PIKA_SERVER:'',
+        PIKA_SERVER:DEFAULT_API_BASE_URL,
         PIKA_KEY:'',
         TTS_VOICE:'alloy',
-        UDIO_SERVER:'',
+        UDIO_SERVER:DEFAULT_API_BASE_URL,
         UDIO_KEY:'',
-        PIXVERSE_SERVER:'',
+        PIXVERSE_SERVER:DEFAULT_API_BASE_URL,
         PIXVERSE_KEY:''
     }
     return v ;
