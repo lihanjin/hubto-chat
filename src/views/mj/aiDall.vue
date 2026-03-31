@@ -19,7 +19,7 @@ const f = ref({size:'1024x1024', prompt:'',"model": "","n": 1});
 const serverModelState = ref({ loading: false, error: '', loaded: false });
 const imageModels = ref<string[]>([]);
 const IMAGE_GENERATION_ENDPOINT = 'image-generation';
-const IMAGE_MODEL_WHITELIST = ['image-01'];
+const IMAGE_MODEL_WHITELIST = ['image-01', 'minimax-image-01'];
 
 const isImageModelName = (model: string) => {
     const lower = model.toLowerCase();
