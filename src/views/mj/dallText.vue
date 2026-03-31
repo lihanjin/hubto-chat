@@ -12,7 +12,7 @@ const chat = computed(() =>props.chat);
 const load = async ()=>{
      mlog('load-dall', chat.value.myid, chat.value.opt?.imageUrl );
     
-     if( !isDallImageModel(chat.value.model)  || !chat.value.myid || !chat.value.opt?.imageUrl ){
+     if( !isDallImageModel(chat.value.model)  || !chat.value.myid ){
          st.value.isLoadImg=true;
          if( chat.value.model=='midjourney'){
            st.value.isLoadImg=false;
@@ -21,16 +21,18 @@ const load = async ()=>{
      }
      let key= 'dall:'+chat.value.myid;
     try {
-        if(chat.value.opt?.imageUrl){
-            //await loadImg(chat.value.opt?.imageUrl);
-            let base64 = await localGet(key );  
-            if(!base64) {
-                const ubase64=  await url2base64(`https://wsrv.nl/?url=${encodeURIComponent(chat.value.opt?.imageUrl)}`  ,key );
+        let base64 = await localGet(key );  
+        if(!base64 && chat.value.opt?.imageUrl) {
+            const imageUrl = chat.value.opt.imageUrl;
+            if (imageUrl.startsWith('data:image/')) {
+                base64 = imageUrl;
+            } else {
+                const ubase64=  await url2base64(`https://wsrv.nl/?url=${encodeURIComponent(imageUrl)}`  ,key );
                 base64= ubase64.base64;
                 mlog('图片已保存>>', ubase64.key )
             }
-            st.value.uri_base64=base64;
         }
+        st.value.uri_base64=base64 ?? '';
     } catch (error) {
         mlog('图片保存失败',error);
     }
@@ -59,7 +61,7 @@ load();
 <template>
 <div>
     <div v-if="st.isLoadImg">
-        <NImage   v-if="chat.opt?.imageUrl" :src="st.uri_base64?st.uri_base64:chat.opt.imageUrl" class=" rounded-sm " :class="[isMobile?'':'!max-w-[500px]']"  /> 
+        <NImage   v-if="st.uri_base64 || chat.opt?.imageUrl" :src="st.uri_base64?st.uri_base64:chat.opt?.imageUrl" class=" rounded-sm " :class="[isMobile?'':'!max-w-[500px]']"  /> 
     </div>
     <div v-else-if="chat.opt?.imageUrl" class="w-[200px] h-[150px] flex flex-col justify-center items-center" >
         <div class="p-4">{{ $t('mjchat.loading') }}</div>

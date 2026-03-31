@@ -344,6 +344,8 @@ export const subGPT= async (data:any, chat:Chat.Chat )=>{
 
 export const isDallImageModel =(model:string|undefined)=>{
     if(!model) return false;
+    const lowerModel = model.toLowerCase();
+    if (/^(minimax-)?image-\d+(\.\d+)?$/.test(lowerModel)) return true;
     if( model.indexOf('flux')>-1 ) return true; 
     if( model.indexOf('ideogram')>-1 ) return true; 
     if( model.indexOf('gpt-image')>-1 ) return true;  
