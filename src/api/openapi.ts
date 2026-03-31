@@ -294,13 +294,15 @@ export const subGPT= async (data:any, chat:Chat.Chat )=>{
       
         let key= 'dall:'+chat.myid;
         const rz : any= d.data[0];
+        let imageSrc = rz.url || '';
         if(rz.b64_json){
             const base64='data:image/png;base64,'+rz.b64_json;
             await localSaveAny(base64,key)
+            imageSrc = base64;
         }
        
         chat.text= rz.revised_prompt??`图片已完成`;
-        chat.opt={imageUrl:rz.url?rz.url: 'https://www.openai-hk.com/res/img/open.png' } ;
+        chat.opt={imageUrl:imageSrc } ;
         chat.loading = false;
         homeStore.setMyData({act:'updateChat', actData:chat });
     } catch (e) {
@@ -318,13 +320,15 @@ export const subGPT= async (data:any, chat:Chat.Chat )=>{
        try{
             const rz : any= d.data[0];
             let key= 'dall:'+chat.myid;
+            let imageSrc = rz.url || '';
       
             if(rz.b64_json){
                 const base64='data:image/png;base64,'+rz.b64_json;
                 await localSaveAny(base64,key)
+                imageSrc = base64;
             }
             chat.text= rz.revised_prompt??`图片已完成`;
-            chat.opt={imageUrl:rz.url?rz.url: 'https://www.openai-hk.com/res/img/open.png' } ;
+            chat.opt={imageUrl:imageSrc } ;
             chat.loading = false;
             homeStore.setMyData({act:'updateChat', actData:chat });
        }catch(e){
