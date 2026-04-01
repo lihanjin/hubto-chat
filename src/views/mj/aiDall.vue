@@ -43,8 +43,8 @@ const hasImageGenerationCapability = (item: any) => {
     if (!modelId)
         return false;
 
-    if (!IMAGE_MODEL_WHITELIST.includes(modelId.toLowerCase()))
-        return false;
+    if (IMAGE_MODEL_WHITELIST.includes(modelId.toLowerCase()))
+        return true;
 
     const endpointTypes = Array.isArray(item?.supported_endpoint_types)
         ? item.supported_endpoint_types
