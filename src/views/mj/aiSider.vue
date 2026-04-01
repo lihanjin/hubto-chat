@@ -17,7 +17,8 @@ const Setting = defineAsyncComponent(() => import('@/components/common/Setting/i
 const userStore = useUserStore()
 
 const st= ref({'show':false,showImg:false, menu:[],active:'chat'})
-
+const showMusicEntry = false
+const showVideoEntry = false
 
 const userInfo = computed(() => userStore.userInfo)
 
@@ -71,7 +72,7 @@ const chatId= computed(()=>chatStore.active??'1002' );
 
 
 
-            <a v-if="!isDisableMenu ( 'music')"      @click="st.active='music'; urouter.push('/music')" class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]"
+            <a v-if="showMusicEntry && !isDisableMenu ( 'music')"      @click="st.active='music'; urouter.push('/music')" class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]"
              >
                 <n-tooltip placement="right" trigger="hover">
                   <template #trigger> 
@@ -84,7 +85,7 @@ const chatId= computed(()=>chatStore.active??'1002' );
                 </n-tooltip>                
             </a>
 
-            <a v-if="!isDisableMenu ( 'video')"      @click="st.active='video'; urouter.push('/video')" 
+            <a v-if="showVideoEntry && !isDisableMenu ( 'video')"      @click="st.active='video'; urouter.push('/video')" 
                 class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
                 <n-tooltip placement="right" trigger="hover">
                   <template #trigger> 

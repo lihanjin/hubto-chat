@@ -9,6 +9,8 @@ import aiDrawInput from './aiDrawInput.vue';
 import {NDrawerContent,NDrawer} from "naive-ui";
 import { isDisableMenu } from '@/api';
 const st= ref({show:true})
+const showMusicEntry = false
+const showVideoEntry = false
 
 const goHome =computed(  () => {
   //router.push('/')
@@ -45,11 +47,11 @@ const urouter = useRouter() //
         <div class="text-[13px]">{{$t('mjtab.draw')}}</div>
       </div>
 
-      <div v-if="!isDisableMenu ( 'music')"    class="flex items-center justify-center flex-col "   @click="  urouter.push('/music')"  :class="[ goHome =='music' ? 'active' : '']" >
+      <div v-if="showMusicEntry && !isDisableMenu ( 'music')"    class="flex items-center justify-center flex-col "   @click="  urouter.push('/music')"  :class="[ goHome =='music' ? 'active' : '']" >
         <SvgIcon icon="arcticons:wynk-music" class="text-3xl"></SvgIcon>
         <div class="text-[13px]">{{ $t('suno.menu') }}</div>
       </div>
-      <div v-if="!isDisableMenu ( 'video')" class="flex items-center justify-center flex-col " @click="urouter.push('/video')" :class="[ goHome =='video' ? 'active' : '']">
+      <div v-if="showVideoEntry && !isDisableMenu ( 'video')" class="flex items-center justify-center flex-col " @click="urouter.push('/video')" :class="[ goHome =='video' ? 'active' : '']">
         <SvgIcon icon="ri:video-on-line" class="text-3xl"></SvgIcon>
         <div class="text-[13px]">{{ $t('video.menu') }}</div>
       </div>

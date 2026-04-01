@@ -480,18 +480,33 @@ export const subModel= async (opt: subModelType)=>{
                     if(data=='[DONE]') opt.onMessage({text:'',isFinish:true})
                     else {
                         const obj= JSON.parse(data );
-                        if( obj.choices[0].delta?.reasoning_content ){
+                        const firstChoice = Array.isArray(obj?.choices) ? obj.choices[0] : undefined;
+                        const delta = firstChoice?.delta ?? {};
+                        const finishReason = firstChoice?.finish_reason ?? null;
+                        const messageContent = firstChoice?.message?.content;
+
+                        if (!firstChoice) {
+                            if (typeof obj?.message === 'string')
+                                opt.onMessage({ text: obj.message, isFinish: true, isAll: true })
+                            return
+                        }
+
+                        if( delta?.reasoning_content ){
                             if (!is_reasoning_content){
                                 opt.onMessage({text:"\n<think>\n"  ,isFinish: false})
                             }
-                            opt.onMessage({text:obj.choices[0].delta?.reasoning_content  ,isFinish:obj.choices[0].finish_reason!=null })
+                            opt.onMessage({text:delta.reasoning_content  ,isFinish:finishReason!=null })
                             is_reasoning_content=true
                         }else{
                             if(is_reasoning_content){
                                  opt.onMessage({text:"\n</think>\n" ,isFinish: false})
                             }
                             is_reasoning_content=false
-                            opt.onMessage({text:obj.choices[0].delta?.content??'' ,isFinish:obj.choices[0].finish_reason!=null })
+                            opt.onMessage({
+                                text: delta?.content ?? messageContent ?? '',
+                                isFinish: finishReason != null,
+                                isAll: !delta?.content && !!messageContent,
+                            })
                         }
                     }
                 },
@@ -512,7 +527,8 @@ export const subModel= async (opt: subModelType)=>{
             opt.onMessage({text: t('mj.thinking') ,isFinish: false })
             let obj :any= await gptFetch( '/v1/chat/completions',body  )
             //mlog('结果 >>',obj   )
-            opt.onMessage({text:obj.choices[0].message.content??'' ,isFinish: true ,isAll:true})
+            const firstChoice = Array.isArray(obj?.choices) ? obj.choices[0] : undefined
+            opt.onMessage({text:firstChoice?.message?.content ?? obj?.message ?? '' ,isFinish: true ,isAll:true})
             
         } catch (error ) {
             mlog('❌未错误2',error  )

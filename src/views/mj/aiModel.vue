@@ -3,6 +3,7 @@ import { NSelect, NInput, NSlider, NButton, useMessage, NTag } from "naive-ui"
 import { ref, computed, watch, onMounted } from "vue";
 import {gptConfigStore, homeStore,useChatStore} from '@/store'
 import { gptFetch, chatSetting } from "@/api";
+import { t } from '@/locales'
  
 
 const emit = defineEmits(['close']);
