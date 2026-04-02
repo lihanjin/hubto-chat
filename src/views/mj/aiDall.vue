@@ -21,6 +21,13 @@ const imageModels = ref<string[]>([]);
 const IMAGE_GENERATION_ENDPOINT = 'image-generation';
 const IMAGE_MODEL_WHITELIST = ['image-01', 'minimax-image-01'];
 
+const getModelId = (item: any) => {
+    if (typeof item === 'string')
+        return item.trim();
+
+    return typeof item?.id === 'string' ? item.id.trim() : '';
+}
+
 const isImageModelName = (model: string) => {
     const lower = model.toLowerCase();
     if (/^image-\d+(\.\d+)?$/.test(lower))
@@ -39,7 +46,7 @@ const isImageModelName = (model: string) => {
 }
 
 const hasImageGenerationCapability = (item: any) => {
-    const modelId = typeof item?.id === 'string' ? item.id.trim() : '';
+    const modelId = getModelId(item);
     if (!modelId)
         return false;
     const lowerModelId = modelId.toLowerCase();
@@ -92,7 +99,7 @@ const loadImageModels = async () => {
         const nextModels = Array.isArray(modelsData?.data)
             ? modelsData.data
                 .filter((item: any) => hasImageGenerationCapability(item))
-                .map((item: any) => typeof item?.id === 'string' ? item.id.trim() : '')
+                .map((item: any) => getModelId(item))
                 .filter((item: string) => !!item)
             : [];
 
