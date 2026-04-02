@@ -19,6 +19,7 @@ const f = ref({size:'1024x1024', prompt:'',"model": "","n": 1});
 const serverModelState = ref({ loading: false, error: '', loaded: false });
 const imageModels = ref<string[]>([]);
 const IMAGE_GENERATION_ENDPOINT = 'image-generation';
+const DEFAULT_IMAGE_MODEL = 'minimax-image-01';
 const IMAGE_MODEL_WHITELIST = ['image-01', 'minimax-image-01'];
 
 const getModelItems = (payload: any) => {
@@ -112,7 +113,10 @@ const loadImageModels = async () => {
         imageModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
 
         if (imageModels.value.length === 0)
-            serverModelState.value.error = 'No image models returned from server';
+            imageModels.value = [DEFAULT_IMAGE_MODEL];
+
+        if (nextModels.length === 0)
+            serverModelState.value.error = `No image models returned from server, fallback to ${DEFAULT_IMAGE_MODEL}`;
 
         syncModelWithChatSetting();
     } catch (error) {
