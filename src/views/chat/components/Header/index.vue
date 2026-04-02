@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { computed, nextTick,ref,watch  } from 'vue'
+import { computed, nextTick,ref,watch, onMounted  } from 'vue'
 import { HoverButton, SvgIcon } from '@/components/common'
 import {  gptConfigStore, homeStore, useAppStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import {NModal} from "naive-ui"
 import aiModel from "@/views/mj/aiModel.vue"
-import { chatSetting, mlog } from '@/api'
+import { chatSetting, gptFetch, mlog } from '@/api'
 import { debounce } from '@/utils/functions/debounce'
 
 const { isMobile } = useBasicLayout()
@@ -51,12 +51,46 @@ const chatSet = new chatSetting( uuid==null?1002:uuid);
 const nGptStore = ref()  ;
 nGptStore.value=  chatSet.getGptConfig() ;
 const st = ref({isShow:false});
+
+const getModelId = (item: any) => {
+  if (typeof item === 'string')
+    return item.trim()
+  return typeof item?.id === 'string' ? item.id.trim() : ''
+}
+
+const syncDefaultModelFromServer = async () => {
+  try {
+    const modelsData = await gptFetch('/v1/models')
+    const serverModels = Array.isArray(modelsData?.data)
+      ? modelsData.data
+          .map((item: any) => getModelId(item))
+          .filter((item: string) => !!item)
+      : []
+
+    if (serverModels.length === 0)
+      return
+
+    const firstModel = serverModels[0]
+    if (firstModel && nGptStore.value?.model !== firstModel) {
+      nGptStore.value = { ...nGptStore.value, model: firstModel }
+      gptConfigStore.setMyData({ model: firstModel })
+      chatSet.save({ model: firstModel })
+      homeStore.setMyData({ act: 'saveChat' })
+    }
+  } catch (error) {
+    mlog('syncDefaultModelFromServer error', error)
+  }
+}
 //导致卡死的原因 当删除时触发 切换 uuid 这个地方会删除的uuid 跟新uuid 一直却换
 watch(()=>gptConfigStore.myData,debounce( ()=>{
   mlog("toMyuid19","watch gptConfigStore.myData ",  chatStore.active  )
   nGptStore.value=  chatSet.getGptConfig() 
 },600 ), {deep:true})
 watch(()=>homeStore.myData.act,debounce( (n)=> n=='saveChat' && (nGptStore.value=  chatSet.getGptConfig() ),600), {deep:true})
+
+onMounted(() => {
+  syncDefaultModelFromServer()
+})
 </script>
 
 <template>

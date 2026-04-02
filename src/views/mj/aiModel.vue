@@ -34,6 +34,12 @@ const modelPlaceholder = computed(() => {
     return 'search and select your model';
 });
 const ms= useMessage();
+const getModelId = (item: any) => {
+    if (typeof item === 'string')
+        return item.trim();
+
+    return typeof item?.id === 'string' ? item.id.trim() : '';
+}
 const loadModels = async () => {
     modelLoadState.value.loading = true;
     modelLoadState.value.error = '';
@@ -41,14 +47,14 @@ const loadModels = async () => {
         const modelsData = await gptFetch('/v1/models');
         const nextModels = Array.isArray(modelsData?.data)
             ? modelsData.data
-                .map((item: any) => typeof item?.id === 'string' ? item.id.trim() : '')
+                .map((item: any) => getModelId(item))
                 .filter((item: string) => !!item)
             : [];
 
         serverModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
         modelLoadState.value.loaded = true;
 
-        if (serverModels.value.length > 0 && !serverModels.value.includes(nGptStore.value.model))
+        if (serverModels.value.length > 0)
             nGptStore.value.model = serverModels.value[0];
 
         if (serverModels.value.length === 0)
