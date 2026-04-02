@@ -21,6 +21,14 @@ const imageModels = ref<string[]>([]);
 const IMAGE_GENERATION_ENDPOINT = 'image-generation';
 const IMAGE_MODEL_WHITELIST = ['image-01', 'minimax-image-01'];
 
+const getModelItems = (payload: any) => {
+    if (Array.isArray(payload?.data))
+        return payload.data;
+    if (Array.isArray(payload))
+        return payload;
+    return [];
+}
+
 const getModelId = (item: any) => {
     if (typeof item === 'string')
         return item.trim();
@@ -96,12 +104,10 @@ const loadImageModels = async () => {
     serverModelState.value.loaded = false;
     try {
         const modelsData = await gptFetch('/v1/models');
-        const nextModels = Array.isArray(modelsData?.data)
-            ? modelsData.data
-                .filter((item: any) => hasImageGenerationCapability(item))
-                .map((item: any) => getModelId(item))
-                .filter((item: string) => !!item)
-            : [];
+        const nextModels = getModelItems(modelsData)
+            .filter((item: any) => hasImageGenerationCapability(item))
+            .map((item: any) => getModelId(item))
+            .filter((item: string) => !!item);
 
         imageModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
 

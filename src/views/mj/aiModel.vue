@@ -34,6 +34,14 @@ const modelPlaceholder = computed(() => {
     return 'search and select your model';
 });
 const ms= useMessage();
+const getModelItems = (payload: any) => {
+    if (Array.isArray(payload?.data))
+        return payload.data;
+    if (Array.isArray(payload))
+        return payload;
+    return [];
+}
+
 const getModelId = (item: any) => {
     if (typeof item === 'string')
         return item.trim();
@@ -45,11 +53,9 @@ const loadModels = async () => {
     modelLoadState.value.error = '';
     try {
         const modelsData = await gptFetch('/v1/models');
-        const nextModels = Array.isArray(modelsData?.data)
-            ? modelsData.data
-                .map((item: any) => getModelId(item))
-                .filter((item: string) => !!item)
-            : [];
+        const nextModels = getModelItems(modelsData)
+            .map((item: any) => getModelId(item))
+            .filter((item: string) => !!item);
 
         serverModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
         modelLoadState.value.loaded = true;

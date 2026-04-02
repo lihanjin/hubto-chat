@@ -52,6 +52,14 @@ const nGptStore = ref()  ;
 nGptStore.value=  chatSet.getGptConfig() ;
 const st = ref({isShow:false});
 
+const getModelItems = (payload: any) => {
+  if (Array.isArray(payload?.data))
+    return payload.data
+  if (Array.isArray(payload))
+    return payload
+  return []
+}
+
 const getModelId = (item: any) => {
   if (typeof item === 'string')
     return item.trim()
@@ -61,11 +69,9 @@ const getModelId = (item: any) => {
 const syncDefaultModelFromServer = async () => {
   try {
     const modelsData = await gptFetch('/v1/models')
-    const serverModels = Array.isArray(modelsData?.data)
-      ? modelsData.data
-          .map((item: any) => getModelId(item))
-          .filter((item: string) => !!item)
-      : []
+    const serverModels = getModelItems(modelsData)
+      .map((item: any) => getModelId(item))
+      .filter((item: string) => !!item)
 
     if (serverModels.length === 0)
       return
