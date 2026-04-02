@@ -43,6 +43,9 @@ const hasImageGenerationCapability = (item: any) => {
     if (!modelId)
         return false;
 
+    if (modelId.toLowerCase().includes('gemini'))
+        return false;
+
     if (IMAGE_MODEL_WHITELIST.includes(modelId.toLowerCase()))
         return true;
 
