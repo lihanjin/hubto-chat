@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed,defineAsyncComponent ,ref} from "vue";
-import { SvgIcon ,HoverButton} from '@/components/common'
+import { SvgIcon ,HoverButton, BrandMark } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 const { isMobile } = useBasicLayout()
-import { NAvatar,NTooltip } from 'naive-ui'
-import { homeStore, useUserStore,useChatStore } from '@/store'
-import defaultAvatar from '@/assets/avatar.jpg'
+import { NTooltip } from 'naive-ui'
+import { homeStore, useChatStore } from '@/store'
 import { router } from '@/router'
 import { isDisableMenu } from "@/api";
 import { useRouter } from "vue-router";
@@ -14,13 +13,10 @@ import { useRouter } from "vue-router";
 
 const chatStore = useChatStore()
 const Setting = defineAsyncComponent(() => import('@/components/common/Setting/index.vue'))
-const userStore = useUserStore()
 
 const st= ref({'show':false,showImg:false, menu:[],active:'chat'})
 const showMusicEntry = false
 const showVideoEntry = false
-
-const userInfo = computed(() => userStore.userInfo)
 
 const urouter = useRouter() //
  
@@ -101,8 +97,9 @@ const chatId= computed(()=>chatStore.active??'1002' );
         <div class="flex flex-col  space-y-2 "> 
 
             
-            <NAvatar  size="large"  round  :src="userInfo.avatar"   v-if="userInfo.avatar"  :fallback-src="defaultAvatar"
-             class=" cursor-pointer"  />
+            <div class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white shadow-sm dark:bg-[#34373c]">
+                <BrandMark />
+            </div>
             
             <HoverButton>
                 <div class="text-xl text-[#4f555e] dark:text-white flex h-full justify-center items-center "  @click="st.show = true">
