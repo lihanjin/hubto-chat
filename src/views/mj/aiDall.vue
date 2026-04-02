@@ -42,11 +42,15 @@ const hasImageGenerationCapability = (item: any) => {
     const modelId = typeof item?.id === 'string' ? item.id.trim() : '';
     if (!modelId)
         return false;
+    const lowerModelId = modelId.toLowerCase();
 
-    if (modelId.toLowerCase().includes('gemini'))
+    if (lowerModelId.includes('gemini'))
         return false;
 
-    if (IMAGE_MODEL_WHITELIST.includes(modelId.toLowerCase()))
+    if (
+        IMAGE_MODEL_WHITELIST.includes(lowerModelId)
+        || /^(minimax-)?image-\d+(\.\d+)?$/.test(lowerModelId)
+    )
         return true;
 
     const endpointTypes = Array.isArray(item?.supported_endpoint_types)
