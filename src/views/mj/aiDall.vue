@@ -19,7 +19,6 @@ const f = ref({size:'1024x1024', prompt:'',"model": "","n": 1});
 const serverModelState = ref({ loading: false, error: '', loaded: false });
 const imageModels = ref<string[]>([]);
 const IMAGE_GENERATION_ENDPOINT = 'image-generation';
-const DEFAULT_IMAGE_MODEL = 'minimax-image-01';
 const IMAGE_MODEL_WHITELIST = ['image-01', 'minimax-image-01'];
 
 const getModelItems = (payload: any) => {
@@ -112,11 +111,8 @@ const loadImageModels = async () => {
 
         imageModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
 
-        if (imageModels.value.length === 0)
-            imageModels.value = [DEFAULT_IMAGE_MODEL];
-
         if (nextModels.length === 0)
-            serverModelState.value.error = `No image models returned from server, fallback to ${DEFAULT_IMAGE_MODEL}`;
+            serverModelState.value.error = t('mjchat.noImageModelForToken');
 
         syncModelWithChatSetting();
     } catch (error) {
@@ -186,7 +182,8 @@ const qualityOption=  computed(()=>{
 });
 const modelPlaceholder = computed(() => {
     if (serverModelState.value.loading) return 'Loading image models...';
-    if (serverModelState.value.loaded && modelOptions.value.length === 0) return serverModelState.value.error || 'No image models available';
+    if (serverModelState.value.loaded && modelOptions.value.length === 0)
+        return serverModelState.value.error || t('mjchat.noImageModelForToken');
     return t('mjset.model');
 });
 const dimensionsList= computed(()=>{
@@ -307,7 +304,13 @@ onMounted(() => {
       size="small"
       class="!w-[70%]"
       :clearable="false"
-    />
+    >
+      <template #empty>
+        <div class="px-3 py-2 text-center text-xs leading-5 text-red-400 whitespace-normal">
+          {{ serverModelState.error || $t('mjchat.noImageModelForToken') }}
+        </div>
+      </template>
+    </n-select>
 </section>
 <section class="mb-4 flex justify-between items-center"  >
      <div>{{ $t('mjchat.size') }}</div>

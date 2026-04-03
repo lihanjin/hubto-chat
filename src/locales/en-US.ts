@@ -357,6 +357,7 @@ export default {
     "img2textinfo": "Not sure what prompts to use? Try Image-to-Text! Submit an image to get prompts",
     "traning": "Translating...",
     "imgcreate": "Generate Image",
+    "noImageModelForToken": "The current token does not include any image generation models. Please choose a model that supports image generation.",
     "imginfo": "Other parameters:<li>1 --no: Ignore --no car to exclude cars from the image</li><li>2 --seed: Obtain a seed first with --seed 123456</li><li>3 --chaos 10: Mix (range: 0-100)</li><li>4 --tile: Fragmentation</li>",
     "tStyle": "Style",
     "tView": "View",
