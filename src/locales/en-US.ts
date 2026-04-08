@@ -30,8 +30,8 @@ export default {
   },
   chat: {
     newChatButton: 'New Chat',
-    //placeholder: 'Ask me anything...(Shift + Enter = line break, "/" to trigger prompts)',
-    placeholder: 'Ask me anything, or paste screenshots or drag the file .(Shift + Enter = line break, "/" to trigger prompts)',
+    //placeholder: 'Ask me anything...(Shift + Enter = line break)',
+    placeholder: 'Ask me anything, or paste screenshots or drag the file .(Shift + Enter = line break)',
     placeholderMobile: 'Ask me anything...',
     copy: 'Copy',
     copied: 'Copied',

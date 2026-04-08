@@ -30,8 +30,8 @@ export default {
     },
     chat: {
         newChatButton: 'Yeni Sohbet',
-        //placeholder: 'Ask me anything...(Shift + Enter = line break, "/" to trigger prompts)',
-        placeholder: 'Bana her şeyi sor, veya ekran görüntüleri yapıştır veya dosyayı sürükleyip bırak. (Shift + Enter = satır atla, "/" prompts tetiklemek için)',
+        //placeholder: 'Ask me anything...(Shift + Enter = line break)',
+        placeholder: 'Bana her şeyi sor, veya ekran görüntüleri yapıştır veya dosyayı sürükleyip bırak. (Shift + Enter = satır atla)',
         placeholderMobile: 'Bana her şeyi sor...',
         copy: 'Kopyala',
         copied: 'Kopyalandı',
