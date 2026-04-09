@@ -122,11 +122,6 @@ onMounted(() => {
         {{ currentChatHistory?.title ?? '' }}
       </h1>
       <div class="flex items-center space-x-2">
-        <HoverButton @click="handleExport">
-          <span class="text-xl text-[#4f555e] dark:text-white">
-            <SvgIcon icon="ri:download-2-line" />
-          </span>
-        </HoverButton>
         <HoverButton @click="handleClear">
           <span class="text-xl text-[#4f555e] dark:text-white">
             <SvgIcon icon="ri:delete-bin-line" />
