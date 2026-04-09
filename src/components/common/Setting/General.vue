@@ -8,6 +8,7 @@ import type { UserInfo } from '@/store/modules/user/helper'
 import { getCurrentDate } from '@/utils/functions'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { t } from '@/locales'
+import { getStorageItem, removeStorageItem, setStorageItem } from '@/utils/storage'
 import { getWebDAVConfig, saveWebDAVConfig, syncToWebDAV, syncFromWebDAV } from '@/utils/webdav'
 
 const appStore = useAppStore()
@@ -93,7 +94,7 @@ function handleReset() {
 
 function exportData(): void {
   const date = getCurrentDate()
-  const data: string = localStorage.getItem('chatStorage') || '{}'
+  const data: string = getStorageItem('chatStorage') || '{}'
   const jsonString: string = JSON.stringify(JSON.parse(data), null, 2)
   const blob: Blob = new Blob([jsonString], { type: 'application/json' })
   const url: string = URL.createObjectURL(blob)
@@ -118,7 +119,7 @@ function importData(event: Event): void {
   reader.onload = () => {
     try {
       const data = JSON.parse(reader.result as string)
-      localStorage.setItem('chatStorage', JSON.stringify(data))
+      setStorageItem('chatStorage', JSON.stringify(data))
       ms.success(t('common.success'))
       location.reload()
     }
@@ -130,7 +131,7 @@ function importData(event: Event): void {
 }
 
 function clearData(): void {
-  localStorage.removeItem('chatStorage')
+  removeStorageItem('chatStorage')
   location.reload()
 }
 

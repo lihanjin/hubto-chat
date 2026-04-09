@@ -4,6 +4,7 @@
 import { gptConfigStore, gptServerStore, homeStore, useAuthStore } from "@/store";
 import { copyToClip } from "@/utils/copy";
 import { isNumber } from "@/utils/is";
+import { getStorageItem } from "@/utils/storage";
 import { localGet, localSaveAny } from "./mjsave";
 import { t } from "@/locales";
 //import { useMessage } from "naive-ui";
@@ -121,7 +122,7 @@ export const mlog = (msg: string, ...args: unknown[]) => {
     // 'border-radius: 3px',
     'color:',
   ].join(';')
-    const debug= localStorage.getItem('debug')
+    const debug= getStorageItem('debug')
     if( !debug  ) return ;
     const style = `${logStyles}${msg.includes('error') ? 'red' : '#dd9089'}`
     console.log(`%c[mjgpt]`,  style, msg , ...args)

@@ -1,6 +1,6 @@
 import { gptsType, mlog } from '@/api';
 import { reactive } from 'vue'
-import { ss } from '@/utils/storage'
+import { getStorageItem, setStorageItem, ss } from '@/utils/storage'
 
 const DEFAULT_API_BASE_URL = 'http://admin.hubto.ai'
 
@@ -55,7 +55,7 @@ export interface gptConfigType{
 }
 const getGptInt= ():gptConfigType =>{
     let v:gptConfigType=getDefault();
-    let str = localStorage.getItem('gptConfigStore');
+    let str = getStorageItem('gptConfigStore');
     if(str){
         let old = JSON.parse(str);
         if(old) v={...v,...old};
@@ -87,7 +87,7 @@ export const gptConfigStore= reactive({
          //mlog('gptConfigStore', v )
          if(v.model && !v.gpts) this.myData.gpts=undefined;
 
-         localStorage.setItem('gptConfigStore', JSON.stringify( this.myData));
+         setStorageItem('gptConfigStore', JSON.stringify( this.myData));
     }
     ,setInit(){
         this.setMyData(getDefault());
@@ -179,7 +179,7 @@ let v:gptServerType={
 }
 const getServerInit= ():gptServerType =>{
     let v:gptServerType=getServerDefault();
-    let str = localStorage.getItem('gptServerStore');
+    let str = getStorageItem('gptServerStore');
     if(str){
         let old = JSON.parse(str);
         if(old) v={...v,...old};
@@ -191,7 +191,7 @@ export const gptServerStore= reactive({
     myData:getServerInit(),
     setMyData(v: Partial<gptServerType>){
          this.myData={...this.myData,...v}; 
-         localStorage.setItem('gptServerStore', JSON.stringify( this.myData));
+         setStorageItem('gptServerStore', JSON.stringify( this.myData));
     }
     ,setInit(){
         this.setMyData(getServerDefault());

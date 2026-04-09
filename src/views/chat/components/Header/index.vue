@@ -69,15 +69,19 @@ const getModelId = (item: any) => {
 const syncDefaultModelFromServer = async () => {
   try {
     const modelsData = await gptFetch('/v1/models')
-    const serverModels = getModelItems(modelsData)
+    const serverModels: string[] = getModelItems(modelsData)
       .map((item: any) => getModelId(item))
-      .filter((item: string) => !!item)
+      .filter((item: string): item is string => !!item)
 
     if (serverModels.length === 0)
       return
 
-    const firstModel = serverModels[0]
-    if (firstModel && nGptStore.value?.model !== firstModel) {
+    const currentModel = nGptStore.value?.model?.trim()
+    if (!currentModel) {
+      const firstModel = serverModels[0]
+      if (!firstModel)
+        return
+
       nGptStore.value = { ...nGptStore.value, model: firstModel }
       gptConfigStore.setMyData({ model: firstModel })
       chatSet.save({ model: firstModel })

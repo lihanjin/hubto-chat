@@ -5,6 +5,7 @@ import pkg from '../../../../package.json'
 import { fetchChatConfig ,getLastVersion} from '@/api'
 import { useAuthStore } from '@/store'
 import { gptUsage  } from "@/api";
+import { getStorageItem, setStorageItem } from '@/utils/storage'
 
 interface ConfigState {
   timeoutMs?: number
@@ -49,13 +50,17 @@ async function fetchConfig() {
   }
 }
 const getLastFrom= ()=>{
-  const str = localStorage.getItem('lastVersion');
+  const str = getStorageItem('lastVersion');
   if(!str) return '';
-  const obj = JSON.parse(str);
-  if( Date.now()- obj.t>1000*60*60 ){
+  try {
+    const obj = JSON.parse(str);
+    if( Date.now()- obj.t>1000*60*60 ){
+      return '';
+    }
+    return obj.v;
+  } catch (error) {
     return '';
   }
-  return obj.v;
 }
 onMounted( () => {
   fetchConfig();
@@ -67,7 +72,7 @@ onMounted( () => {
     getLastVersion().then(res=>{
       if(  res[0] && res[0].name ){
         st.value.lastVersion = res[0].name;
-        localStorage.setItem('lastVersion',JSON.stringify( {v:  res[0].name,t: Date.now() } ))
+        setStorageItem('lastVersion',JSON.stringify( {v:  res[0].name,t: Date.now() } ))
       }
     });
   }

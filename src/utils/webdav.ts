@@ -1,4 +1,6 @@
 ﻿// WebDAV 同步工具
+import { getStorageItem, setStorageItem } from '@/utils/storage'
+
 interface WebDAVConfig {
   url: string
   username: string
@@ -9,12 +11,12 @@ const WEBDAV_CONFIG_KEY = 'webdav_config'
 const WEBDAV_FILE_NAME = 'chatgpt-backup.json'
 
 export function getWebDAVConfig(): WebDAVConfig | null {
-  const config = localStorage.getItem(WEBDAV_CONFIG_KEY)
+  const config = getStorageItem(WEBDAV_CONFIG_KEY)
   return config ? JSON.parse(config) : null
 }
 
 export function saveWebDAVConfig(config: WebDAVConfig): void {
-  localStorage.setItem(WEBDAV_CONFIG_KEY, JSON.stringify(config))
+  setStorageItem(WEBDAV_CONFIG_KEY, JSON.stringify(config))
 }
 
 async function webdavRequest(config: WebDAVConfig, method: string, data?: string) {
@@ -35,7 +37,7 @@ export async function syncToWebDAV(): Promise<void> {
   if (!config)
     throw new Error('WebDAV 未配置')
   
-  const data = localStorage.getItem('chatStorage') || '{}'
+  const data = getStorageItem('chatStorage') || '{}'
   
   // 尝试上传，如果失败尝试创建目录再上传
   try {
@@ -67,10 +69,5 @@ export async function syncFromWebDAV(): Promise<void> {
     throw new Error('WebDAV 未配置')
   
   const result = await webdavRequest(config, 'GET')
-  try {
-    localStorage.setItem('chatStorage', result.data || '{}')
-  }
-  catch {
-    throw new Error('浏览器存储限制，请使用Chrome/Edge或手动导入文件')
-  }}
-
+  setStorageItem('chatStorage', result.data || '{}')
+}

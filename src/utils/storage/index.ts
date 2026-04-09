@@ -3,6 +3,102 @@ interface StorageData<T = any> {
   expire: number | null
 }
 
+interface StorageBackend {
+  clear: () => void
+  getItem: (key: string) => string | null
+  removeItem: (key: string) => void
+  setItem: (key: string, value: string) => void
+}
+
+const memoryStorageData = new Map<string, string>()
+
+const memoryStorage: StorageBackend = {
+  clear() {
+    memoryStorageData.clear()
+  },
+  getItem(key) {
+    return memoryStorageData.get(key) ?? null
+  },
+  removeItem(key) {
+    memoryStorageData.delete(key)
+  },
+  setItem(key, value) {
+    memoryStorageData.set(key, value)
+  },
+}
+
+let activeStorage: StorageBackend | null = null
+let warnedAboutStorageFallback = false
+
+function warnStorageFallback(error: unknown) {
+  if (warnedAboutStorageFallback || typeof console === 'undefined')
+    return
+
+  warnedAboutStorageFallback = true
+  console.warn('[storage] localStorage unavailable, using in-memory fallback.', error)
+}
+
+function resolveStorage(): StorageBackend {
+  if (activeStorage)
+    return activeStorage
+
+  if (typeof window === 'undefined') {
+    activeStorage = memoryStorage
+    return activeStorage
+  }
+
+  try {
+    const storage = window.localStorage
+    const probeKey = '__storage_probe__'
+    storage.setItem(probeKey, probeKey)
+    storage.removeItem(probeKey)
+    activeStorage = storage
+    return activeStorage
+  }
+  catch (error) {
+    warnStorageFallback(error)
+    activeStorage = memoryStorage
+    return activeStorage
+  }
+}
+
+function runWithStorage<T>(operation: (storage: StorageBackend) => T, fallback: T): T {
+  try {
+    return operation(resolveStorage())
+  }
+  catch (error) {
+    warnStorageFallback(error)
+    activeStorage = memoryStorage
+
+    try {
+      return operation(memoryStorage)
+    }
+    catch {
+      return fallback
+    }
+  }
+}
+
+export function getStorageItem(key: string) {
+  return runWithStorage(storage => storage.getItem(key), null)
+}
+
+export function setStorageItem(key: string, value: string) {
+  runWithStorage(storage => storage.setItem(key, value), undefined)
+}
+
+export function removeStorageItem(key: string) {
+  runWithStorage(storage => storage.removeItem(key), undefined)
+}
+
+export function clearStorage() {
+  runWithStorage(storage => storage.clear(), undefined)
+}
+
+export function isPersistentStorageAvailable() {
+  return resolveStorage() !== memoryStorage
+}
+
 export function createLocalStorage(options?: { expire?: number | null }) {
   const DEFAULT_CACHE_TIME = 60 * 60 * 24 * 7
 
@@ -15,11 +111,11 @@ export function createLocalStorage(options?: { expire?: number | null }) {
     }
 
     const json = JSON.stringify(storageData)
-    window.localStorage.setItem(key, json)
+    setStorageItem(key, json)
   }
 
   function get(key: string) {
-    const json = window.localStorage.getItem(key)
+    const json = getStorageItem(key)
     if (json) {
       let storageData: StorageData | null = null
 
@@ -42,11 +138,11 @@ export function createLocalStorage(options?: { expire?: number | null }) {
   }
 
   function remove(key: string) {
-    window.localStorage.removeItem(key)
+    removeStorageItem(key)
   }
 
   function clear() {
-    window.localStorage.clear()
+    clearStorage()
   }
 
   return { set, get, remove, clear }

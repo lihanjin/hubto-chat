@@ -287,15 +287,12 @@ load();
                 <div class="relative flex items-center justify-center bg-white bg-opacity-10 rounded-[8px] overflow-hidden aspect-[16/8.85]">
                     <video  :src="v.url" :controls="st.ctrIndex==k"  loop playsinline class="w-full h-full object-cover"></video>
                 </div>
-                <a class="absolute top-[8px] right-[8px] cursor-pointer" target="_blank" :href="v.url" :download="(k+1)+'.mp4'"><SvgIcon icon="mdi:download" /></a>
             </div>
         </div>
         <div v-else-if="chat.opt.imageUrls" class="grid grid-cols-2 grid-rows-2 gap-0 max-w-[500px]" >
              <div v-for="(v,k) in chat.opt.imageUrls" class="relative aspect-square overflow-hidden"  @mouseover="st.ctrIndex=k" >
                  
                  <NImage  :src="v.url"     class="w-full h-full object-cover"/>
-                 
-                <a class="absolute top-[8px] right-[8px] cursor-pointer" target="_blank" :href="v.url" :download="(k+1)+'.mp4'"><SvgIcon icon="mdi:download" /></a>
             </div>
         </div>
         <NImage v-else-if="chat.opt.imageUrl" :src="st.uri_base64?st.uri_base64: mjImgUrl( chat.opt.imageUrl)" class=" rounded-sm " :class="[isMobile?'':'!max-w-[500px]']"  /> 

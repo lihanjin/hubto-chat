@@ -53,14 +53,14 @@ const loadModels = async () => {
     modelLoadState.value.error = '';
     try {
         const modelsData = await gptFetch('/v1/models');
-        const nextModels = getModelItems(modelsData)
+        const nextModels: string[] = getModelItems(modelsData)
             .map((item: any) => getModelId(item))
-            .filter((item: string) => !!item);
+            .filter((item: string): item is string => !!item);
 
         serverModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
         modelLoadState.value.loaded = true;
 
-        if (serverModels.value.length > 0)
+        if (!nGptStore.value.model?.trim() && serverModels.value.length > 0)
             nGptStore.value.model = serverModels.value[0];
 
         if (serverModels.value.length === 0)

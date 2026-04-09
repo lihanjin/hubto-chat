@@ -12,6 +12,7 @@ import { mlog, train, upImg ,getMjAll, mjFetch } from '@/api'
 import { homeStore ,useChatStore} from "@/store";
 const chatStore = useChatStore()
 import {t} from "@/locales"
+import { getStorageItem, setStorageItem } from '@/utils/storage'
 //import { upImg } from "./mj";
 import AiEditVidoe from './aiEditVidoe.vue'
 import AiEditImage from './aiEditImage.vue'
@@ -225,12 +226,12 @@ watch(()=>homeStore.myData.act,(n)=>{
 });
 watch(()=>f.value,(n)=>{
     mlog("变化", n )
-    localStorage.setItem("mjinput",  JSON.stringify(n))
+    setStorageItem("mjinput",  JSON.stringify(n))
 },{deep:true} );
 onMounted(()=>{
     homeStore.myData.act=='same2' && same2();
 
-    let minput=  localStorage.getItem('mjinput')
+    let minput=  getStorageItem('mjinput')
     if(minput ){
       try {
         const a=JSON.parse(minput)

@@ -8,6 +8,7 @@ import { ref,onMounted } from 'vue';
 import { mlog } from '@/api';
 import realtime from './realtime.vue';
 import { homeStore } from '@/store';
+import { getStorageItem, setStorageItem } from '@/utils/storage';
 
 const ms= useMessage();
 
@@ -91,8 +92,8 @@ const go= async()=>{
     });
 
     myListen();
-    localStorage.setItem("_t_apikey", st.value.apikey);
-    localStorage.setItem("_t_baseurl", st.value.baseUrl);
+    setStorageItem("_t_apikey", st.value.apikey);
+    setStorageItem("_t_baseurl", st.value.baseUrl);
 
 }
 
@@ -182,8 +183,8 @@ const setRealtimeEvents=(realtimeEvent: RealtimeEvent )=>{
    
 // }),
 onMounted(()=>{
-    st.value.apikey = localStorage.getItem("_t_apikey") || "";
-    st.value.baseUrl = localStorage.getItem("_t_baseurl") || "wss://api.openai.com/v1/realtime";
+    st.value.apikey = getStorageItem("_t_apikey") || "";
+    st.value.baseUrl = getStorageItem("_t_baseurl") || "wss://api.openai.com/v1/realtime";
 })
 </script>
 

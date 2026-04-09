@@ -4,6 +4,7 @@ import { store } from '@/store/helper'
 import { fetchSession } from '@/api'
 import { gptConfigStore, homeStore } from '@/store/homeStore'
 import { useAppStore } from '@/store'
+import { getStorageItem } from '@/utils/storage'
 const appStore = useAppStore()
 interface SessionResponse {
   theme?: string
@@ -39,7 +40,7 @@ export const useAuthStore = defineStore('auth-store', {
             appStore.setTheme(  data.theme && data.theme=='light' ?'light':'dark')
         }
 
-        let str = localStorage.getItem('gptConfigStore');
+        let str = getStorageItem('gptConfigStore');
         if( ! str ) setTimeout( ()=>  gptConfigStore.setInit() , 500); 
         return Promise.resolve(data)
       }
