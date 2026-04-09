@@ -3,20 +3,17 @@ import { ref ,computed,watch, onMounted } from 'vue';
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { t } from '@/locales'
 import { NInput ,NButton,useMessage,NImage,NTooltip, NAutoComplete,NTag
-,NPopover,NModal, NDropdown  } from 'naive-ui'
+,NPopover,NModal } from 'naive-ui'
 import { SvgIcon } from '@/components/common';
 import { canVisionModel, GptUploader, mlog, upImg,getFileFromClipboard,isFileMp3
-    ,countTokens, checkDisableGpt4, Recognition, regCookie,isCanBase64Model } from '@/api';
+    ,countTokens, checkDisableGpt4, regCookie,isCanBase64Model } from '@/api';
 import { gptConfigStore, homeStore,useChatStore } from '@/store';
 import { AutoCompleteOptions } from 'naive-ui/es/auto-complete/src/interface';
 import { RenderLabel } from 'naive-ui/es/_internal/select-menu/src/interface';
 import { useRoute } from 'vue-router' 
 import aiModel from "@/views/mj/aiModel.vue"
-import AiMic from './aiMic.vue';
-import { useIconRender } from '@/hooks/useIconRender'
 import VueTurnstile from 'vue-turnstile';
 
-const { iconRender } = useIconRender()
 //import FormData from 'form-data'
 const route = useRoute() 
 const chatStore = useChatStore()
@@ -24,8 +21,8 @@ const chatStore = useChatStore()
 const emit = defineEmits(['update:modelValue'])
 const props = defineProps<{ modelValue:string,disabled?:boolean,searchOptions?:AutoCompleteOptions,renderOption?: RenderLabel }>();
 const fsRef = ref()
-const st = ref<{fileBase64:string[],fileName:string[],isLoad:number,isShow:boolean,showMic:boolean,micStart:boolean}>({fileBase64:[],fileName:[],isLoad:0
-    ,isShow:false,showMic:false , micStart:false})
+const st = ref<{fileBase64:string[],fileName:string[],isLoad:number,isShow:boolean}>({fileBase64:[],fileName:[],isLoad:0
+    ,isShow:false})
 const { isMobile } = useBasicLayout()
 const placeholder = computed(() => {
   if (isMobile.value)
@@ -166,52 +163,6 @@ const paste=   (e: ClipboardEvent)=>{
     let rz =   getFileFromClipboard(e); 
     if(rz.length>0 ) upFile(rz[0]);
 }
- 
-
-const sendMic= (e:any )=>{
-    mlog('sendMic', e );
-    st.value.showMic=false;
-    let du = 'whisper.wav';// (e.stat && e.stat.duration)?(e.stat.duration.toFixed(2)+'s'):'whisper.wav';
-    const file = new File([e.blob], du, { type: 'audio/wav' });
-    homeStore.setMyData({act:'gpt.whisper', actData:{ file , prompt:'whisper',duration : e.stat?.duration } });
-}
-
-//语音识别ASR
-const goASR=()=>{
-    const olod = mvalue.value;
-    const rec= new Recognition();
-    let rz= '';
-    rec.setListener( (r:string)=>{
-        //mlog('result ', r  );
-        rz= r ; 
-        mvalue.value= r;
-        st.value.micStart= true 
-    }).setOnEnd( ( )=>{
-        //mlog('rec end');
-        mvalue.value= olod+rz;
-        ms.info( t('mj.micRecEnd'));
-        st.value.micStart= false 
-    }).setOpt({
-        timeOut:2000,
-        onStart:()=>{ ms.info( t('mj.micRec')); st.value.micStart= true },
-    }).start();
-}
-
-const drOption=[
-    {
-        label:  t('mj.micWhisper'),
-        key: "whisper",
-        icon:iconRender({ icon: 'ri:openai-fill' }),
-    },{
-        label:  t('mj.micAsr'),
-        icon:iconRender({ icon: 'ri:chrome-line' }),
-        key: "asr"
-    }
-]
-const handleSelectASR = ( key: string | number )=>{ 
-    if(key=='asr')    goASR(); 
-    if(key=='whisper')   st.value.showMic=true; 
-}
 
 
 const appearance = computed(() => {
@@ -234,10 +185,7 @@ watch(()=> homeStore.myData.vtoken ,  regCookie  )
 <template>
 <vue-turnstile ref="tRef"  :site-key="homeStore.myData.session.turnstile" :appearance="appearance"    v-model="homeStore.myData.vtoken" v-if="homeStore.myData.session.turnstile" />
 <!-- <div>{{ homeStore.myData.vtoken }}</div> -->
-<div v-if="st.showMic" class="  myinputs flex justify-center items-center" >
-    <AiMic @cancel="st.showMic=false" @send="sendMic" />
-</div>
-<div class="  myinputs"  @drop="drop" @paste="paste" v-else>
+<div class="  myinputs"  @drop="drop" @paste="paste">
 
     <input type="file" id="fileInput"  @change="selectFile"  class="hidden" ref="fsRef"   :accept="acceptData"/>
     <div class="w-full relative">
@@ -296,22 +244,6 @@ watch(()=> homeStore.myData.vtoken ,  regCookie  )
                     <div v-else v-html="$t('mj.upImg')"> </div>
                     </n-tooltip>
                 </div>
-                <!-- <div  class=" relative; w-[22px]">
-                    <SvgIcon icon="bi:mic"  class="absolute bottom-[10px] left-[30px] cursor-pointer" @click="st.showMic=true"></SvgIcon>
-                </div> -->
-                <n-dropdown trigger="hover" :options="drOption" @select="handleSelectASR">
-                    <div  class=" relative; w-[22px]">
-                        <div class="absolute bottom-[14px] left-[31px]" v-if="st.micStart">
-                            <span class="relative flex h-3 w-3" >
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-400"></span>
-                            </span>
-                        </div>
-                        <!-- <SvgIcon icon="bi:mic"  class="absolute bottom-[10px] left-[55px] cursor-pointer" @click="goASR()"></SvgIcon> -->
-                        <SvgIcon icon="bi:mic"  class="absolute bottom-[10px] left-[30px] cursor-pointer"></SvgIcon>
-                    </div>
-                </n-dropdown>
-                
             </template>
             <template #suffix>
                 <div  class=" relative; w-[40px] ">
@@ -338,12 +270,6 @@ watch(()=> homeStore.myData.vtoken ,  regCookie  )
 <NModal v-model:show="st.isShow"   preset="card"  :title="$t('mjchat.modelChange')" class="!max-w-[620px]" @close="st.isShow=false" >  
         <aiModel @close="st.isShow=false"/>
 </NModal>
-
-<!-- <n-drawer v-model:show="st.showMic" :width="420" :on-update:show="onShowFun">
-    <n-drawer-content title="录音" closable>
-        <AiMic />
-    </n-drawer-content>
-</n-drawer> -->
 
 </template>
 <style    >
