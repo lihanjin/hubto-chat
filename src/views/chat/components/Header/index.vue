@@ -110,11 +110,13 @@ onMounted(() => {
     <div class="relative flex items-center justify-between min-w-0 overflow-hidden h-14" data-tauri-drag-region>
       <div class="flex items-center">
         <button
-          class="flex items-center justify-center w-11 h-11"
+          class="flex items-center justify-center w-11 h-11 text-[#4f555e] transition-colors dark:text-white/80"
+          :aria-label="collapsed ? '展开聊天列表' : '收起聊天列表'"
+          :title="collapsed ? '展开聊天列表' : '收起聊天列表'"
           @click="handleUpdateCollapsed" v-if="isMobile"
         >
-          <SvgIcon v-if="collapsed" class="text-2xl" icon="ri:align-justify" />
-          <SvgIcon v-else class="text-2xl" icon="ri:align-right" />
+          <SvgIcon v-if="collapsed" class="text-[1.35rem]" icon="ri:sidebar-unfold-line" />
+          <SvgIcon v-else class="text-[1.35rem]" icon="ri:sidebar-fold-line" />
         </button>
       </div>
       <h1  class="flex-1 px-4 pr-6 overflow-hidden cursor-pointer select-none text-ellipsis whitespace-nowrap"
