@@ -120,7 +120,7 @@ const abc=()=>{
             {{ $t('mj.server_load') }}  </NTag>
 
 </div>
-<NModal  v-model:show="st.isShow"  preset="card"  :title="$t('mj.model_select')" class="!max-w-[620px]" @close="st.isShow=false" >
+<NModal  v-model:show="st.isShow" :auto-focus="false" preset="card"  :title="$t('mj.model_select')" class="!max-w-[620px]" @close="st.isShow=false" >
      <NEmpty v-if="st.isLoadData==0">Loading....</NEmpty>
      <NEmpty v-else-if="st.isLoadData==-1">Loaded Fail ....</NEmpty>
      <div   class=" overflow-y-auto max-h-[400px]" v-else >

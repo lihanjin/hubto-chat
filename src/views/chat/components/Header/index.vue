@@ -146,7 +146,7 @@ onMounted(() => {
     </div>
   </header>
 
-  <NModal v-model:show="st.isShow"   preset="card"  :title="$t('mjchat.modelChange')" class="!max-w-[620px]" @close="st.isShow=false" >  
+  <NModal v-model:show="st.isShow" :auto-focus="false" preset="card"  :title="$t('mjchat.modelChange')" class="!max-w-[620px]" @close="st.isShow=false" >  
         <aiModel @close="st.isShow=false"/>
   </NModal>
 </template>
