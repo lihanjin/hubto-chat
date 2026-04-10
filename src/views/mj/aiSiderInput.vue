@@ -39,7 +39,7 @@ function drawSent(e:any){
       </template>
     </n-button>
     </div> -->
-    <n-drawer v-model:show="st.show" :height="565"  placement="bottom">
+    <n-drawer v-model:show="st.show" class="mobile-bottom-drawer-90" placement="bottom">
     <n-drawer-content   style="--n-body-padding:0" class="h-full">
       <aiDrawInput @draw-sent="drawSent" :button-disabled="isLoading"/>
     </n-drawer-content>

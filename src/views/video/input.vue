@@ -9,7 +9,9 @@ import { SvgIcon } from '@/components/common';
 import { t } from '@/locales';
 import { mlog } from '@/api';
 import { useRoute } from 'vue-router';
+import { useBasicLayout } from '@/hooks/useBasicLayout';
 const route = useRoute(); // 获取当前路由对象
+const { isMobile } = useBasicLayout()
 
 //"fal-ai/ltxv-13b-098-distilled/image-to-video"
 //const st= ref({"model":"veo3-fast-frames",isLoading:false});
@@ -109,13 +111,22 @@ onMounted(() => {
     //googleVeoFeed('veo3-fast-frames:1757929479-J7A8Cm8JQS')
 })
 
+const dismissKeyboard = () => {
+    if (!isMobile.value || typeof document === 'undefined')
+        return;
+
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement)
+        activeElement.blur();
+}
+
 
  
 </script>
 <template>
 <div  class="p-2">
-    <div  class="pt-1">
-       <n-select v-model:value="st.model" :options="modelsOption" size="small" filterable />
+    <div class="pt-1" @touchstart.passive="dismissKeyboard" @mousedown.capture="dismissKeyboard">
+       <n-select v-model:value="st.model" :options="modelsOption" size="small" :filterable="!isMobile" />
     </div>
     <NEmpty :description="$t('video.selectModel')" v-if="!nowModel" class="pt-3">
     </NEmpty>

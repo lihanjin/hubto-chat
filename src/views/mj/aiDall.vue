@@ -5,9 +5,11 @@ import { chatSetting, gptFetch, mlog, upImg } from '@/api'
 import { gptConfigStore, homeStore, useChatStore } from '@/store';
 import { SvgIcon } from '@/components/common';
 import { t } from '@/locales';
+import { useBasicLayout } from '@/hooks/useBasicLayout';
 
 const ms = useMessage();
 const chatStore = useChatStore();
+const { isMobile } = useBasicLayout()
 interface myFile{
     file:any
     base64:string
@@ -287,6 +289,15 @@ const selectFile=(input:any)=>{
     }).catch(e=>ms.error(e));
 }
 
+const dismissKeyboard = () => {
+    if (!isMobile.value || typeof document === 'undefined')
+        return;
+
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement)
+        activeElement.blur();
+}
+
 onMounted(() => {
     loadImageModels();
 })
@@ -295,30 +306,36 @@ onMounted(() => {
 <template>
 <section class="mb-4 flex justify-between items-center"  >
      <div>{{ $t('mjset.model') }} </div>
-    <n-select
-      v-model:value="f.model"
-      :options="modelOptions"
-      :loading="serverModelState.loading"
-      :placeholder="modelPlaceholder"
-      filterable
-      size="small"
-      class="!w-[70%]"
-      :clearable="false"
-    >
-      <template #empty>
-        <div class="px-3 py-2 text-center text-xs leading-5 text-red-400 whitespace-normal">
-          {{ serverModelState.error || $t('mjchat.noImageModelForToken') }}
-        </div>
-      </template>
-    </n-select>
+    <div class="!w-[70%]" @touchstart.passive="dismissKeyboard" @mousedown.capture="dismissKeyboard">
+      <n-select
+        v-model:value="f.model"
+        :options="modelOptions"
+        :loading="serverModelState.loading"
+        :placeholder="modelPlaceholder"
+        :filterable="!isMobile"
+        size="small"
+        class="!w-full"
+        :clearable="false"
+      >
+        <template #empty>
+          <div class="px-3 py-2 text-center text-xs leading-5 text-red-400 whitespace-normal">
+            {{ serverModelState.error || $t('mjchat.noImageModelForToken') }}
+          </div>
+        </template>
+      </n-select>
+    </div>
 </section>
 <section class="mb-4 flex justify-between items-center"  >
      <div>{{ $t('mjchat.size') }}</div>
-    <n-select v-model:value="f.size" :options="dimensionsList"  filterable tag size="small"  class="!w-[70%]" :clearable="false" />
+    <div class="!w-[70%]" @touchstart.passive="dismissKeyboard" @mousedown.capture="dismissKeyboard">
+      <n-select v-model:value="f.size" :options="dimensionsList" :filterable="!isMobile" :tag="!isMobile" size="small" class="!w-full" :clearable="false" />
+    </div>
 </section>
 <section class="mb-4 flex justify-between items-center" v-if="isCanImageEdit" >
      <div>Quality</div>
-    <n-select v-model:value="st.quality" :options="qualityOption"  filterable tag size="small"  class="!w-[70%]" :clearable="false" />
+    <div class="!w-[70%]" @touchstart.passive="dismissKeyboard" @mousedown.capture="dismissKeyboard">
+      <n-select v-model:value="st.quality" :options="qualityOption" :filterable="!isMobile" :tag="!isMobile" size="small" class="!w-full" :clearable="false" />
+    </div>
 </section>
 
 <div class="mb-1">

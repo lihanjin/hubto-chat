@@ -4,10 +4,12 @@ import { ref, computed, watch, onMounted } from "vue";
 import {gptConfigStore, homeStore,useChatStore} from '@/store'
 import { gptFetch, chatSetting } from "@/api";
 import { t } from '@/locales'
+import { useBasicLayout } from '@/hooks/useBasicLayout'
  
 
 const emit = defineEmits(['close']);
 const chatStore = useChatStore();
+const { isMobile } = useBasicLayout()
 const uuid = chatStore.active;
 //mlog('uuid', uuid );
 const chatSet = new chatSetting( uuid==null?1002:uuid);
@@ -113,6 +115,15 @@ const reSet=()=>{
     nGptStore.value= gptConfigStore.myData;
 }
 
+const dismissKeyboard = () => {
+    if (!isMobile.value || typeof document === 'undefined')
+        return;
+
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement)
+        activeElement.blur();
+}
+
 onMounted(() => {
     loadModels()
 });
@@ -128,14 +139,14 @@ onMounted(() => {
      
     </div>
     <div  class="!w-[70%] flex justify-end items-center " >
-       <div> 
+       <div @touchstart.passive="dismissKeyboard" @mousedown.capture="dismissKeyboard"> 
         <n-select
           v-model:value="nGptStore.model"
           :options="modellist"
           :loading="modelLoadState.loading"
           :placeholder="modelPlaceholder"
           size="small"
-          filterable
+          :filterable="!isMobile"
         />
        </div>
        <div class=" pl-2" > 

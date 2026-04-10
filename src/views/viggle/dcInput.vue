@@ -250,7 +250,7 @@ onMounted(() => {
    <div   class="pt-4 text-[12px]" v-html="t('dance.info')"> </div>
 </div>
 
- <n-drawer v-model:show="st.showImg"   :placement="isMobile?'bottom':'right'"  :class="isMobile?['!h-[90vh]']: ['!w-[80vw]']" style="--n-body-padding:0">
+ <n-drawer v-model:show="st.showImg" :placement="isMobile?'bottom':'right'" :class="isMobile?['mobile-bottom-drawer-90']: ['!w-[80vw]']" style="--n-body-padding:0">
     <n-drawer-content  class="mydrawer" :closable="isMobile">
         <template #header>
             <div class="flex justify-between items-center w-full"> 
