@@ -68,21 +68,13 @@ const options = computed(() => {
       key: 'toggleRenderType',
       icon: iconRender({ icon: asRawText.value ? 'ic:outline-code-off' : 'ic:outline-code' }),
     });
-    common.unshift({
-      label: t('mj.tts'),
-      key: 'tts',
-      icon: iconRender({ icon:'mdi:tts' }),
-    })
   }
 
   return common
 })
 
-function handleSelect(key: 'copyText' | 'delete' | 'edit' | 'toggleRenderType' | 'tts') {
+function handleSelect(key: 'copyText' | 'delete' | 'edit' | 'toggleRenderType') {
   switch (key) {
-    case 'tts': 
-      homeStore.setMyData({act:'gpt.ttsv2', actData:{ index:props.index , uuid:props.chat.uuid, text:props.text } });
-      return;
     case 'copyText':
       handleCopy()
       return

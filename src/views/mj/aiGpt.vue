@@ -234,36 +234,6 @@ watch(()=>homeStore.myData.act, async (n)=>{
         textRz.value=[];
         submit(model, message );
 
-    }else if(n=='gpt.ttsv2'){ 
-        const actData:any = homeStore.myData.actData;
-        mlog('gpt.ttsv2',actData );
-        st.value.index= actData.index;
-        st.value.uuid= actData.uuid;
-        ms.info( t('mj.ttsLoading'));
-        const chatSet = new chatSetting(   +st.value.uuid  );
-        const nGptStore =   chatSet.getGptConfig()  ; 
-
-        subTTS({model:'tts-1',input: actData.text , voice:nGptStore.tts_voice }).then(d=>{
-                ms.success( t('mj.ttsSuccess'));
-                mlog('subTTS',d );
-                //d.player.play(); 
-                //textRz.value.push('ok');
-                updateChatSome( +st.value.uuid,  st.value.index 
-                , { 
-                dateTime: new Date().toLocaleString(),loading: false 
-                
-                ,opt:{duration:d.duration,lkey:d.saveID }
-                });
-               // goFinish();
-                setTimeout(() => { 
-                    homeStore.setMyData({act:'playtts',actData:{ saveID:d.saveID} });
-                }, 100);
-            }).catch(e=>{
-                let  emsg =   (JSON.stringify(  e.reason? JSON.parse( e.reason ):e,null,2)); 
-                if(e.message!='canceled' && emsg.indexOf('aborted')==-1 ) textRz.value.push("\n"+t('mjchat.failReason')+" \n```\n"+emsg+"\n```\n");
-                //goFinish();
-            });
-
     }  
     
 })
