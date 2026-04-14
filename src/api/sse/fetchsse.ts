@@ -20,7 +20,10 @@ export async function fetchSSE(
   try{
      res = await fetch(url, fetchOptions)
   }catch(e :any ){ 
-    throw {reason: JSON.stringify({message:'fetch error, pleace check url',url ,code:'fetch_error'}) } 
+    if (e?.name === 'AbortError')
+      throw { message: 'canceled', code: 'aborted' }
+
+    throw { reason: JSON.stringify({ message: 'fetch error, please check url', url, code: 'fetch_error' }) }
   }
   if (!res.ok) {
     let reason: string
