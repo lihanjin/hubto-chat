@@ -695,13 +695,60 @@ export const openaiSetting= ( q:any,ms:MessageApiInjection )=>{
     }
     else if(isObject(q)){
         mlog('setting2', q )
-        gptServerStore.setMyData(  q )
-        //gptServerStore.setMyData( gptServerStore.myData );
+        const queryConfig = readUrlApiConfig();
+        if(queryConfig.hasConfig){
+            const url = queryConfig.url1 ? myTrim(myTrim(queryConfig.url1, '/'), '\\') : gptServerStore.myData.OPENAI_API_BASE_URL;
+            const key = queryConfig.key1 ?? gptServerStore.myData.OPENAI_API_KEY;
+            gptServerStore.setMyData({
+                OPENAI_API_BASE_URL: url,
+                OPENAI_API_KEY: key,
+                ...syncServerConfigByPrimary(url, key),
+            });
+        }else{
+            gptServerStore.setMyData(  q )
+        }
         blurClean();
         gptServerStore.setMyData( gptServerStore.myData );
 
     }
 
+}
+
+const syncServerConfigByPrimary = (baseUrl?: string, apiKey?: string) => {
+    const syncedConfig:any = {}
+    if(gptServerStore.myData.IS_SET_SYNC === false) return syncedConfig
+
+    if(baseUrl){
+        Object.assign(syncedConfig,{
+            MJ_SERVER:baseUrl,
+            SUNO_SERVER:baseUrl,
+            LUMA_SERVER:baseUrl,
+            VIGGLE_SERVER:baseUrl,
+            RUNWAY_SERVER:baseUrl,
+            IDEO_SERVER:baseUrl,
+            KLING_SERVER:baseUrl,
+            PIKA_SERVER:baseUrl,
+            PIXVERSE_SERVER:baseUrl,
+            UDIO_SERVER:baseUrl,
+            RIFF_SERVER:baseUrl,
+        });
+    }
+    if(apiKey){
+        Object.assign(syncedConfig,{
+            MJ_API_SECRET:apiKey,
+            SUNO_KEY:apiKey,
+            LUMA_KEY:apiKey,
+            VIGGLE_KEY:apiKey,
+            RUNWAY_KEY:apiKey,
+            IDEO_KEY:apiKey,
+            KLING_KEY:apiKey,
+            PIKA_KEY:apiKey,
+            PIXVERSE_KEY:apiKey,
+            UDIO_KEY:apiKey,
+            RIFF_KEY:apiKey,
+        });
+    }
+    return syncedConfig;
 }
 export const blurClean= ()=>{
   mlog('blurClean');

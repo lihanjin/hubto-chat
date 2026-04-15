@@ -178,14 +178,53 @@ let v:gptServerType={
     }
     return v ;
 }
+
+const dropCachedServiceConfig = (cached: Partial<gptServerType>): Partial<gptServerType> => {
+    const sanitized = { ...cached }
+
+    sanitized.OPENAI_API_KEY = ''
+    sanitized.OPENAI_API_BASE_URL = DEFAULT_API_BASE_URL
+    sanitized.OPENAI_API_KEY2 = ''
+    sanitized.OPENAI_API_BASE_URL2 = ''
+    sanitized.OPENAI_API_KEY3 = ''
+    sanitized.OPENAI_API_BASE_URL3 = ''
+    sanitized.NEW_API_KEY = ''
+    sanitized.NEW_API_URL = ''
+    sanitized.MJ_SERVER = DEFAULT_API_BASE_URL
+    sanitized.MJ_API_SECRET = ''
+    sanitized.UPLOADER_URL = ''
+    sanitized.SUNO_SERVER = DEFAULT_API_BASE_URL
+    sanitized.SUNO_KEY = ''
+    sanitized.LUMA_SERVER = DEFAULT_API_BASE_URL
+    sanitized.LUMA_KEY = ''
+    sanitized.VIGGLE_SERVER = DEFAULT_API_BASE_URL
+    sanitized.VIGGLE_KEY = ''
+    sanitized.RUNWAY_SERVER = DEFAULT_API_BASE_URL
+    sanitized.RUNWAY_KEY = ''
+    sanitized.IDEO_SERVER = DEFAULT_API_BASE_URL
+    sanitized.IDEO_KEY = ''
+    sanitized.KLING_SERVER = DEFAULT_API_BASE_URL
+    sanitized.KLING_KEY = ''
+    sanitized.PIKA_SERVER = DEFAULT_API_BASE_URL
+    sanitized.PIKA_KEY = ''
+    sanitized.UDIO_SERVER = DEFAULT_API_BASE_URL
+    sanitized.UDIO_KEY = ''
+    sanitized.PIXVERSE_SERVER = DEFAULT_API_BASE_URL
+    sanitized.PIXVERSE_KEY = ''
+    sanitized.RIFF_SERVER = DEFAULT_API_BASE_URL
+    sanitized.RIFF_KEY = ''
+
+    return sanitized
+}
+
 const getServerInit= ():gptServerType =>{
     let v:gptServerType=getServerDefault();
-    if (hasUrlApiConfig()) return v
     let str = getStorageItem('gptServerStore');
     if(str){
         let old = JSON.parse(str);
-        if(old) v={...v,...old};
+        if(old) v={...v,...dropCachedServiceConfig(old)};
     }
+    if (hasUrlApiConfig()) return v
     return v;
 }
 
