@@ -8,23 +8,12 @@ import { gptServerStore, type gptServerType } from './store/homeStore'
 import { readUrlApiConfig } from './utils/urlApiConfig'
 
 const DEFAULT_API_BASE_URL = 'http://admin.hubto.ai'
-const LEGACY_API_HOSTS = [
-  'https://alltoken.co',
-  'http://alltoken.co',
-  'https://api.alltoken.co',
-  'http://api.alltoken.co',
-  'https://www.alltoken.co',
-  'http://www.alltoken.co',
-]
 
 const normalizeApiBaseUrl = (baseUrl?: string | null) => {
   const trimmed = (baseUrl || '').trim()
 
   if (!trimmed)
     return DEFAULT_API_BASE_URL
-
-  if (LEGACY_API_HOSTS.some(host => trimmed.startsWith(host)))
-    return trimmed.replace(/^https?:\/\/(?:api\.|www\.)?alltoken\.co/i, DEFAULT_API_BASE_URL)
 
   return trimmed
 }
