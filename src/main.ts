@@ -5,6 +5,7 @@ import { setupAssets, setupScrollbarStyle } from './plugins'
 import { setupStore } from './store'
 import { setupRouter } from './router'
 import { gptServerStore, type gptServerType } from './store/homeStore'
+import { readUrlApiConfig } from './utils/urlApiConfig'
 
 const DEFAULT_API_BASE_URL = 'http://admin.hubto.ai'
 const LEGACY_API_HOSTS = [
@@ -80,17 +81,8 @@ async function bootstrap() {
 
   setupStore(app)
 
-  const urlParams = new URLSearchParams(window.location.search)
-  const hasUrlConfig = [
-    'apikey',
-    'apikey1',
-    'apikey2',
-    'apikey3',
-    'apiurl',
-    'apiurl1',
-    'apiurl2',
-    'apiurl3',
-  ].some(name => urlParams.has(name))
+  const urlApiConfig = readUrlApiConfig()
+  const hasUrlConfig = urlApiConfig.hasConfig
 
   const normalizedServerConfig: Partial<gptServerType> = {
     OPENAI_API_BASE_URL: normalizeApiBaseUrl(gptServerStore.myData.OPENAI_API_BASE_URL),
@@ -115,21 +107,13 @@ async function bootstrap() {
   // 从 URL 参数读取配置（支持三个 API 配置）
   // 只要 URL 中携带 apikey/apiurl，就以 URL 为准，不再依赖本地缓存值。
   if (hasUrlConfig) {
-    const readUrlParam = (name: string, index?: number) => {
-      const raw = index
-        ? urlParams.get(`${name}${index}`)
-        : urlParams.get(name)
-      const value = (raw || '').trim()
-      return value || undefined
-    }
-
-    const key1 = readUrlParam('apikey', 1) ?? readUrlParam('apikey')
-    const key2 = readUrlParam('apikey', 2)
-    const key3 = readUrlParam('apikey', 3)
-    const baseUrl1Raw = readUrlParam('apiurl', 1) ?? readUrlParam('apiurl')
+    const key1 = urlApiConfig.key1
+    const key2 = urlApiConfig.key2
+    const key3 = urlApiConfig.key3
+    const baseUrl1Raw = urlApiConfig.url1
     const baseUrl1 = normalizeApiBaseUrl(baseUrl1Raw)
-    const baseUrl2Raw = readUrlParam('apiurl', 2)
-    const baseUrl3Raw = readUrlParam('apiurl', 3)
+    const baseUrl2Raw = urlApiConfig.url2
+    const baseUrl3Raw = urlApiConfig.url3
     const hasPrimaryConfig = Boolean(key1 || baseUrl1Raw)
 
     const urlConfig: Partial<gptServerType> = {

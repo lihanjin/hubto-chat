@@ -1,6 +1,7 @@
 import { gptsType, mlog } from '@/api';
 import { reactive } from 'vue'
 import { getStorageItem, setStorageItem, ss } from '@/utils/storage'
+import { hasUrlApiConfig } from '@/utils/urlApiConfig'
 
 const DEFAULT_API_BASE_URL = 'http://admin.hubto.ai'
 
@@ -179,21 +180,7 @@ let v:gptServerType={
 }
 const getServerInit= ():gptServerType =>{
     let v:gptServerType=getServerDefault();
-    if (typeof window !== 'undefined') {
-        const urlParams = new URLSearchParams(window.location.search)
-        const hasUrlConfig = [
-            'apikey',
-            'apikey1',
-            'apikey2',
-            'apikey3',
-            'apiurl',
-            'apiurl1',
-            'apiurl2',
-            'apiurl3',
-        ].some(name => urlParams.has(name))
-        if (hasUrlConfig)
-            return v
-    }
+    if (hasUrlApiConfig()) return v
     let str = getStorageItem('gptServerStore');
     if(str){
         let old = JSON.parse(str);

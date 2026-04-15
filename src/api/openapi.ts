@@ -6,6 +6,7 @@ import axios from 'axios';
 import { localGet, localSaveAny } from "./mjsave";
 import { isNumber, isObject } from "@/utils/is";
 import { t } from "@/locales";
+import { readUrlApiConfig } from "@/utils/urlApiConfig";
 import { ChatMessage } from "gpt-tokenizer/esm/GptEncoding";
 import { chatSetting } from "./chat";
 import { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
@@ -58,12 +59,27 @@ export const KnowledgeCutOffDate: Record<string, string> = {
 
 const getUrl=(url:string)=>{
     if(url.indexOf('http')==0) return url;
-    if(gptServerStore.myData.OPENAI_API_BASE_URL){
-        return `${ gptServerStore.myData.OPENAI_API_BASE_URL}${url}`;
+    const runtimeApiBaseUrl = getRuntimeOpenAIApiBaseUrl();
+    if(runtimeApiBaseUrl){
+        return `${ runtimeApiBaseUrl}${url}`;
     }
     return `/openapi${url}`;
 }
 export const gptGetUrl = getUrl
+
+const getRuntimeOpenAIApiBaseUrl = () => {
+    const urlApiConfig = readUrlApiConfig();
+    if(urlApiConfig.url1){
+        return myTrim(myTrim(urlApiConfig.url1, '/'), '\\');
+    }
+    return gptServerStore.myData.OPENAI_API_BASE_URL;
+}
+
+const getRuntimeOpenAIApiKey = () => {
+    const urlApiConfig = readUrlApiConfig();
+    return urlApiConfig.key1 || gptServerStore.myData.OPENAI_API_KEY;
+}
+
 export const gptFetch=(url:string,data?:any,opt2?:any )=>{
     mlog('gptFetch', url  );
     let headers= {'Content-Type':'application/json'}
@@ -163,7 +179,8 @@ export const GptUploader =   ( _url :string, FormData:FormData )=>{
     const uploadNomal= (url:string)=>{ 
         url= gptServerStore.myData.UPLOADER_URL? gptServerStore.myData.UPLOADER_URL :  gptGetUrl( url );
         let headers=   {'Content-Type': 'multipart/form-data' } 
-        if(gptServerStore.myData.OPENAI_API_BASE_URL && url.indexOf(gptServerStore.myData.OPENAI_API_BASE_URL)>-1  ) {
+        const runtimeApiBaseUrl = getRuntimeOpenAIApiBaseUrl();
+        if(runtimeApiBaseUrl && url.indexOf(runtimeApiBaseUrl)>-1  ) {
             headers={...headers,...getHeaderAuthorization()}
             
         }else{
@@ -201,7 +218,7 @@ export const GptUploader =   ( _url :string, FormData:FormData )=>{
     //前端API
     }else if( uploadType=='api' ) { 
         headers={...headers,...getHeaderAuthorization()}
-        let url= `${ gptServerStore.myData.OPENAI_API_BASE_URL}${_url}`
+        let url= `${ getRuntimeOpenAIApiBaseUrl()}${_url}`
         return  uploadNomalDo(url,headers );
     
     //自定义链接
@@ -368,7 +385,8 @@ function getHeaderAuthorization(){
         const  vtokenh={ 'x-vtoken':  homeStore.myData.vtoken ,'x-ctoken':  homeStore.myData.ctoken};
         headers= {...headers, ...vtokenh}
     }
-    if(!gptServerStore.myData.OPENAI_API_KEY){
+    const runtimeApiKey = getRuntimeOpenAIApiKey();
+    if(!runtimeApiKey){
         const authStore = useAuthStore()
         if( authStore.token ) {
             const bmi= { 'x-ptoken':  authStore.token };
@@ -378,7 +396,7 @@ function getHeaderAuthorization(){
         return headers
     }
     const bmi={
-        'Authorization': 'Bearer ' +gptServerStore.myData.OPENAI_API_KEY
+        'Authorization': 'Bearer ' +runtimeApiKey
     }
     headers= {...headers, ...bmi }
     return headers
