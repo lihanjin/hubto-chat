@@ -80,7 +80,19 @@ async function bootstrap() {
 
   setupStore(app)
 
-  gptServerStore.setMyData({
+  const urlParams = new URLSearchParams(window.location.search)
+  const hasUrlConfig = [
+    'apikey',
+    'apikey1',
+    'apikey2',
+    'apikey3',
+    'apiurl',
+    'apiurl1',
+    'apiurl2',
+    'apiurl3',
+  ].some(name => urlParams.has(name))
+
+  const normalizedServerConfig: Partial<gptServerType> = {
     OPENAI_API_BASE_URL: normalizeApiBaseUrl(gptServerStore.myData.OPENAI_API_BASE_URL),
     MJ_SERVER: normalizeApiBaseUrl(gptServerStore.myData.MJ_SERVER),
     SUNO_SERVER: normalizeApiBaseUrl(gptServerStore.myData.SUNO_SERVER),
@@ -93,45 +105,45 @@ async function bootstrap() {
     PIXVERSE_SERVER: normalizeApiBaseUrl(gptServerStore.myData.PIXVERSE_SERVER),
     UDIO_SERVER: normalizeApiBaseUrl(gptServerStore.myData.UDIO_SERVER),
     RIFF_SERVER: normalizeApiBaseUrl(gptServerStore.myData.RIFF_SERVER),
-  })
-
-  // 从 URL 参数读取配置（支持三个API配置）
-  const urlParams = new URLSearchParams(window.location.search);
-  const getUrlParam = (name: string, index: number) => {
-    return urlParams.get(`${name}${index}`) || urlParams.get(`${name}`);
-  };
-
-  const key1 = getUrlParam('apikey', 1);
-  const key2 = getUrlParam('apikey', 2);
-  const key3 = getUrlParam('apikey', 3);
-  const url1 = getUrlParam('apiurl', 1);
-  const url2 = getUrlParam('apiurl', 2);
-  const url3 = getUrlParam('apiurl', 3);
-
-  const urlConfig: Partial<gptServerType> = {}
-  if (key1 || url1) {
-    if (key1)
-      urlConfig.OPENAI_API_KEY = key1
-    if (url1)
-      urlConfig.OPENAI_API_BASE_URL = normalizeApiBaseUrl(url1)
-
-    Object.assign(urlConfig, syncServerConfigFromPrimaryApi(normalizeApiBaseUrl(url1), key1))
-  }
-  if (key2 || url2) {
-    if (key2)
-      urlConfig.OPENAI_API_KEY2 = key2
-    if (url2)
-      urlConfig.OPENAI_API_BASE_URL2 = normalizeApiBaseUrl(url2)
-  }
-  if (key3 || url3) {
-    if (key3)
-      urlConfig.OPENAI_API_KEY3 = key3
-    if (url3)
-      urlConfig.OPENAI_API_BASE_URL3 = normalizeApiBaseUrl(url3)
   }
 
-  if (Object.keys(urlConfig).length > 0) {
-    gptServerStore.setMyData(urlConfig)
+  if (hasUrlConfig)
+    Object.assign(gptServerStore.myData, normalizedServerConfig)
+  else
+    gptServerStore.setMyData(normalizedServerConfig)
+
+  // 从 URL 参数读取配置（支持三个 API 配置）
+  // 只要 URL 中携带 apikey/apiurl，就以 URL 为准，不再依赖本地缓存值。
+  if (hasUrlConfig) {
+    const readUrlParam = (name: string, index?: number) => {
+      const raw = index
+        ? urlParams.get(`${name}${index}`)
+        : urlParams.get(name)
+      const value = (raw || '').trim()
+      return value || undefined
+    }
+
+    const key1 = readUrlParam('apikey', 1) ?? readUrlParam('apikey')
+    const key2 = readUrlParam('apikey', 2)
+    const key3 = readUrlParam('apikey', 3)
+    const baseUrl1Raw = readUrlParam('apiurl', 1) ?? readUrlParam('apiurl')
+    const baseUrl1 = normalizeApiBaseUrl(baseUrl1Raw)
+    const baseUrl2Raw = readUrlParam('apiurl', 2)
+    const baseUrl3Raw = readUrlParam('apiurl', 3)
+    const hasPrimaryConfig = Boolean(key1 || baseUrl1Raw)
+
+    const urlConfig: Partial<gptServerType> = {
+      OPENAI_API_KEY: key1 || '',
+      OPENAI_API_BASE_URL: baseUrl1,
+      OPENAI_API_KEY2: key2 || '',
+      OPENAI_API_BASE_URL2: baseUrl2Raw ? normalizeApiBaseUrl(baseUrl2Raw) : '',
+      OPENAI_API_KEY3: key3 || '',
+      OPENAI_API_BASE_URL3: baseUrl3Raw ? normalizeApiBaseUrl(baseUrl3Raw) : '',
+      ...(hasPrimaryConfig ? syncServerConfigFromPrimaryApi(baseUrl1, key1) : {}),
+    }
+
+    // URL 参数仅用于当前会话，避免再次写入本地缓存。
+    Object.assign(gptServerStore.myData, urlConfig)
   }
 
   setupI18n(app)
