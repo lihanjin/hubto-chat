@@ -5,7 +5,6 @@ import General from './General.vue'
 import Advanced from './Advanced.vue'
 import aiModel from '@/views/mj/aiModel.vue'
 import aiSetServer from '@/views/mj/aiSetServer.vue'
-import About from './About.vue'
 import { homeStore, useAuthStore } from '@/store'
 import { SvgIcon } from '@/components/common'
 
@@ -69,15 +68,6 @@ const show = computed({
           </template>
           <aiSetServer />
         </NTabPane>
-        <NTabPane name="Config" tab="Config">
-          <template #tab>
-            <SvgIcon class="text-lg" icon="ri:list-settings-line" />
-            <!-- <span class="ml-2">{{ $t('setting.config') }}</span> -->
-            <span class="ml-2">{{ $t('mjset.about') }}</span>
-          </template>
-          <About />
-        </NTabPane>
-
       </NTabs>
     </div>
   </NModal>
