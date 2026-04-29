@@ -55,6 +55,8 @@ const isImageModelName = (model: string) => {
     ].some(keyword => lower.includes(keyword));
 }
 
+const isGptImageModel = (model: string) => model.toLowerCase().includes('gpt-image');
+
 const hasImageGenerationCapability = (item: any) => {
     const modelId = getModelId(item);
     if (!modelId)
@@ -67,6 +69,7 @@ const hasImageGenerationCapability = (item: any) => {
     if (
         IMAGE_MODEL_WHITELIST.includes(lowerModelId)
         || /^(minimax-)?image-\d+(\.\d+)?$/.test(lowerModelId)
+        || isImageModelName(modelId)
     )
         return true;
 
@@ -77,7 +80,7 @@ const hasImageGenerationCapability = (item: any) => {
     if (endpointTypes.length > 0)
         return endpointTypes.includes(IMAGE_GENERATION_ENDPOINT);
 
-    return isImageModelName(modelId);
+    return false;
 }
 
 const modelOptions = computed(() => imageModels.value.map(model => ({ label: model, value: model })));
@@ -106,10 +109,10 @@ const loadImageModels = async () => {
     serverModelState.value.loaded = false;
     try {
         const modelsData = await gptFetch('/v1/models');
-        const nextModels = getModelItems(modelsData)
+        const nextModels: string[] = getModelItems(modelsData)
             .filter((item: any) => hasImageGenerationCapability(item))
             .map((item: any) => getModelId(item))
-            .filter((item: string) => !!item);
+            .filter((item: string): item is string => !!item);
 
         imageModels.value = Array.from(new Set(nextModels)).sort((a, b) => a.localeCompare(b));
 
@@ -202,8 +205,11 @@ const dimensionsList= computed(()=>{
             }
     ];
     } 
-    if(f.value.model=='gpt-image-1'){
+    if(isGptImageModel(f.value.model)){
         return [{ 
+                    "label": "auto",
+                    "value": "auto"
+                }, {
                     "label": "1024px*1024px",
                     "value": "1024x1024"
                 }, {
@@ -268,7 +274,7 @@ watch(() => gptConfigStore.myData.model, () => {
 })
 const isCanImageEdit= computed(()=>{
     if(f.value.model=='dall-e-2') return true;
-    if(f.value.model=='gpt-image-1') return true;
+    if(isGptImageModel(f.value.model)) return true;
     if(f.value.model.indexOf('kontext')>-1) return true;
     if(f.value.model.indexOf('banana')>-1) return true;
     return false;

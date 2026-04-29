@@ -11,7 +11,6 @@ import { ChatMessage } from "gpt-tokenizer/esm/GptEncoding";
 import { chatSetting } from "./chat";
 import { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
 import { ideoSubmit } from "./ideo";
-import { error } from "console";
 //import {encode,  encodeChat}  from "gpt-tokenizer"
 //import {encode,  encodeChat} from "gpt-tokenizer/cjs/encoding/cl100k_base.js";
 //import { get_encoding } from '@dqbd/tiktoken'
@@ -363,11 +362,11 @@ export const isDallImageModel =(model:string|undefined)=>{
     if(!model) return false;
     const lowerModel = model.toLowerCase();
     if (/^(minimax-)?image-\d+(\.\d+)?$/.test(lowerModel)) return true;
-    if( model.indexOf('flux')>-1 ) return true; 
-    if( model.indexOf('ideogram')>-1 ) return true; 
-    if( model.indexOf('gpt-image')>-1 ) return true;  
+    if( lowerModel.indexOf('flux')>-1 ) return true; 
+    if( lowerModel.indexOf('ideogram')>-1 ) return true; 
+    if( lowerModel.indexOf('gpt-image')>-1 ) return true;  
    
-    return ['dall-e-2' ,'dall-e-3','ideogram' ].indexOf(model)>-1
+    return ['dall-e-2' ,'dall-e-3','ideogram' ].indexOf(lowerModel)>-1
       
 }
 
